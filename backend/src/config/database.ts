@@ -12,12 +12,8 @@ import { Project, ProjectMilestone, ProjectMember } from '../entities/Project';
 import { Approval } from '../entities/Approval';
 
 export const AppDataSource = new DataSource({
-  type: 'mysql',
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '3306'),
-  username: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'password',
-  database: process.env.DB_NAME || 'project_management',
+  type: 'sqlite',
+  database: process.env.DB_PATH || './database.sqlite',
   synchronize: true, // 开发环境设为true，生产环境应设为false
   logging: process.env.NODE_ENV === 'development',
   entities: [
