@@ -10,8 +10,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  JoinColumn,
-  OneToMany
+  JoinColumn
 } from 'typeorm';
 import { User } from './User';
 import { Customer } from './Customer';
@@ -27,7 +26,7 @@ export enum ContractType {
 export enum PaymentMethod {
   LUMP_SUM = 'lump_sum', // 一次性付款
   INSTALLMENT = 'installment', // 分期付款
-  milestones = 'milestones' // 按进度付款
+  MILESTONES = 'milestones' // 按进度付款
 }
 
 export enum ContractStatus {
@@ -49,11 +48,8 @@ export class Contract {
   @Column({ length: 200 })
   contractName!: string; // 合同名称
 
-  @Column({
-    type: 'enum',
-    enum: ContractType
-  })
-  contractType!: ContractType; // 合同类型
+  @Column({ type: 'varchar', length: 50 })
+  contractType!: string; // 合同类型
 
   @Column()
   customerId!: string; // 关联客户
@@ -81,21 +77,14 @@ export class Contract {
   @Column({ type: 'date' })
   endDate!: Date; // 合同结束日期
 
-  @Column({
-    type: 'enum',
-    enum: PaymentMethod
-  })
-  paymentMethod!: PaymentMethod; // 付款方式
+  @Column({ type: 'varchar', length: 50 })
+  paymentMethod!: string; // 付款方式
 
   @Column({ length: 500, nullable: true })
   paymentTerms!: string; // 付款条件
 
-  @Column({
-    type: 'enum',
-    enum: ContractStatus,
-    default: ContractStatus.DRAFT
-  })
-  status!: ContractStatus; // 合同状态
+  @Column({ type: 'varchar', length: 50, default: 'draft' })
+  status!: string; // 合同状态
 
   @Column({ nullable: true })
   contractFile!: string; // 合同扫描件路径
@@ -155,11 +144,7 @@ export class PaymentSchedule {
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   actualAmount!: string; // 实际付款金额
 
-  @Column({
-    type: 'enum',
-    enum: ['unpaid', 'paid', 'partial', 'overdue'],
-    default: 'unpaid'
-  })
+  @Column({ type: 'varchar', length: 50, default: 'unpaid' })
   status!: string; // 付款状态
 
   @CreateDateColumn()

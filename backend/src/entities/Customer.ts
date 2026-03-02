@@ -61,17 +61,11 @@ export class Customer {
   @Column({ length: 100, nullable: true })
   shortName!: string; // 客户简称
 
-  @Column({
-    type: 'enum',
-    enum: CustomerIndustry
-  })
-  industry!: CustomerIndustry; // 所属行业
+  @Column({ type: 'varchar', length: 50 })
+  industry!: string; // 所属行业
 
-  @Column({
-    type: 'enum',
-    enum: CustomerScale
-  })
-  scale!: CustomerScale; // 客户规模
+  @Column({ type: 'varchar', length: 50 })
+  scale!: string; // 客户规模
 
   @Column({ length: 20 })
   phone!: string; // 联系电话
@@ -79,11 +73,8 @@ export class Customer {
   @Column({ length: 255, nullable: true })
   address!: string; // 联系地址
 
-  @Column({
-    type: 'enum',
-    enum: CustomerLevel
-  })
-  level!: CustomerLevel; // 客户等级
+  @Column({ type: 'varchar', length: 50 })
+  level!: string; // 客户等级
 
   @Column()
   ownerId!: string; // 关联销售（负责人）
@@ -92,12 +83,8 @@ export class Customer {
   @JoinColumn({ name: 'ownerId' })
   owner!: User;
 
-  @Column({
-    type: 'enum',
-    enum: CustomerStatus,
-    default: CustomerStatus.POTENTIAL
-  })
-  status!: CustomerStatus; // 客户状态
+  @Column({ type: 'varchar', length: 50, default: 'potential' })
+  status!: string; // 客户状态
 
   @Column({ type: 'text', nullable: true })
   description!: string; // 备注说明

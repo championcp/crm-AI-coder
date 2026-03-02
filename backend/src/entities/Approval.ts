@@ -38,11 +38,8 @@ export class Approval {
   @Column({ length: 20, unique: true })
   approvalCode!: string; // 审批编号
 
-  @Column({
-    type: 'enum',
-    enum: ApprovalType
-  })
-  type!: ApprovalType; // 审批类型
+  @Column({ type: 'varchar', length: 50 })
+  type!: string; // 审批类型
 
   @Column({ length: 200 })
   title!: string; // 审批标题
@@ -64,12 +61,8 @@ export class Approval {
   @JoinColumn({ name: 'approverId' })
   approver!: User;
 
-  @Column({
-    type: 'enum',
-    enum: ApprovalStatus,
-    default: ApprovalStatus.PENDING
-  })
-  status!: ApprovalStatus; // 审批状态
+  @Column({ type: 'varchar', length: 50, default: 'pending' })
+  status!: string; // 审批状态
 
   @Column({ type: 'text', nullable: true })
   comment!: string; // 审批意见
@@ -77,14 +70,10 @@ export class Approval {
   @Column({ nullable: true })
   relatedId!: string; // 关联业务ID（如商机ID、合同ID、项目ID等）
 
-  @Column({
-    type: 'enum',
-    enum: ['opportunity', 'contract', 'project', 'payment', 'other'],
-    default: 'other'
-  })
+  @Column({ type: 'varchar', length: 50, default: 'other' })
   relatedType!: string; // 关联业务类型
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   approvalTime!: Date; // 审批时间
 
   @CreateDateColumn()

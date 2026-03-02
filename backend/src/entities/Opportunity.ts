@@ -10,8 +10,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  JoinColumn,
-  OneToMany
+  JoinColumn
 } from 'typeorm';
 import { User } from './User';
 import { Customer } from './Customer';
@@ -71,25 +70,14 @@ export class Opportunity {
   @Column({ type: 'decimal', precision: 15, scale: 2 })
   amount!: number; // 商机金额
 
-  @Column({
-    type: 'enum',
-    enum: OpportunityLevel,
-    nullable: true
-  })
-  level!: OpportunityLevel; // 商机级别
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  level!: string; // 商机级别
 
-  @Column({
-    type: 'enum',
-    enum: OpportunitySource
-  })
-  source!: OpportunitySource; // 商机来源
+  @Column({ type: 'varchar', length: 50 })
+  source!: string; // 商机来源
 
-  @Column({
-    type: 'enum',
-    enum: OpportunityStage,
-    default: OpportunityStage.REQUIREMENT
-  })
-  stage!: OpportunityStage; // 销售阶段
+  @Column({ type: 'varchar', length: 50, default: 'requirement' })
+  stage!: string; // 销售阶段
 
   @Column({ type: 'date', nullable: true })
   expectedSignDate!: Date; // 预计签约日期
@@ -120,14 +108,10 @@ export class Opportunity {
   @JoinColumn({ name: 'presalesId' })
   presales!: User;
 
-  @Column({
-    type: 'enum',
-    enum: OpportunityStatus,
-    default: OpportunityStatus.ACTIVE
-  })
-  status!: OpportunityStatus; // 商机状态
+  @Column({ type: 'varchar', length: 50, default: 'active' })
+  status!: string; // 商机状态
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   lastFollowTime!: Date; // 最后跟进时间
 
   @CreateDateColumn()
@@ -147,7 +131,7 @@ export class Opportunity {
  * - 准三级: 金额 5-20万
  * - 四级: 金额 < 5万
  */
-export function calculateOpportunityLevel(amount: number): OpportunityLevel {
+export function calculateOpportunityLevel(amount: number): string {
   if (amount >= 5000000) return OpportunityLevel.LEVEL_1;
   if (amount >= 2000000) return OpportunityLevel.QUASI_LEVEL_1;
   if (amount >= 1000000) return OpportunityLevel.LEVEL_2;

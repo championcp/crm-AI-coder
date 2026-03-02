@@ -69,21 +69,21 @@ export class User {
   email!: string; // 邮箱
 
   @Column({
-    type: 'enum',
-    enum: UserRole,
+    type: 'varchar',
+    length: 50,
     default: UserRole.SALES_MANAGER
   })
-  role!: UserRole; // 角色
+  role!: string; // 角色
 
   @Column({ length: 50 })
   department!: string; // 所属部门
 
   @Column({
-    type: 'enum',
-    enum: UserStatus,
+    type: 'varchar',
+    length: 20,
     default: UserStatus.ACTIVE
   })
-  status!: UserStatus; // 用户状态
+  status!: string; // 用户状态
 
   @Column({ nullable: true })
   lastLoginTime!: Date; // 最后登录时间

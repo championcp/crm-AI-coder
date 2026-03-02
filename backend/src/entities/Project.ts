@@ -10,8 +10,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  JoinColumn,
-  OneToMany
+  JoinColumn
 } from 'typeorm';
 import { User } from './User';
 import { Contract } from './Contract';
@@ -48,11 +47,8 @@ export class Project {
   @Column({ length: 200 })
   projectName!: string; // 项目名称
 
-  @Column({
-    type: 'enum',
-    enum: ProjectType
-  })
-  projectType!: ProjectType; // 项目类型
+  @Column({ type: 'varchar', length: 50 })
+  projectType!: string; // 项目类型
 
   @Column()
   contractId!: string; // 关联合同
@@ -78,19 +74,11 @@ export class Project {
   @JoinColumn({ name: 'deputyManagerId' })
   deputyManager!: User;
 
-  @Column({
-    type: 'enum',
-    enum: ProjectStatus,
-    default: ProjectStatus.PENDING_APPROVAL
-  })
-  status!: ProjectStatus; // 项目状态
+  @Column({ type: 'varchar', length: 50, default: 'pending_approval' })
+  status!: string; // 项目状态
 
-  @Column({
-    type: 'enum',
-    enum: ProjectLevel,
-    default: ProjectLevel.B
-  })
-  level!: ProjectLevel; // 项目级别
+  @Column({ type: 'varchar', length: 50, default: 'B' })
+  level!: string; // 项目级别
 
   @Column({ type: 'date' })
   planStartDate!: Date; // 计划开始日期
@@ -155,11 +143,7 @@ export class ProjectMilestone {
   @Column({ type: 'date', nullable: true })
   actualDate!: string; // 实际完成日期
 
-  @Column({
-    type: 'enum',
-    enum: ['not_started', 'in_progress', 'completed', 'delayed'],
-    default: 'not_started'
-  })
+  @Column({ type: 'varchar', length: 50, default: 'not_started' })
   status!: string; // 里程碑状态
 
   @Column({ length: 500, nullable: true })
@@ -192,10 +176,7 @@ export class ProjectMember {
   @JoinColumn({ name: 'userId' })
   user!: User;
 
-  @Column({
-    type: 'enum',
-    enum: ['manager', 'tech_lead', 'developer', 'tester', 'implementer']
-  })
+  @Column({ type: 'varchar', length: 50 })
   role!: string; // 成员角色
 
   @Column({ length: 50 })
