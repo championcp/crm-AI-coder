@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, App as AntApp } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import MainLayout from './layouts/MainLayout';
 import LoginPage from './pages/Login';
@@ -101,14 +101,16 @@ const MainLayoutRoute: React.FC = () => {
 function App() {
   return (
     <ConfigProvider locale={zhCN}>
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPageWrapper />} />
-            <Route path="/*" element={<MainLayoutRoute />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
+      <AntApp>
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPageWrapper />} />
+              <Route path="/*" element={<MainLayoutRoute />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </AntApp>
     </ConfigProvider>
   );
 }
