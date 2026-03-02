@@ -92,7 +92,7 @@ router.get('/pending', authenticate, async (req: AuthRequest, res: Response) => 
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const approval = await approvalRepository().findOne({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       relations: ['applicant', 'approver']
     });
 
@@ -115,7 +115,7 @@ router.post('/:id/process', authenticate, async (req: AuthRequest, res: Response
   try {
     const { action, comment } = req.body; // action: approve/reject
     const approval = await approvalRepository().findOne({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       relations: ['applicant']
     });
 
@@ -159,7 +159,7 @@ router.post('/:id/process', authenticate, async (req: AuthRequest, res: Response
 router.post('/:id/cancel', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const approval = await approvalRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!approval) {

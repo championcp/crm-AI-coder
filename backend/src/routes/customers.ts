@@ -89,7 +89,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const customer = await customerRepository().findOne({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       relations: ['owner', 'creator']
     });
 
@@ -151,7 +151,7 @@ router.post('/', authenticate, authorize('customer:create'), async (req: AuthReq
 router.put('/:id', authenticate, authorize('customer:update'), async (req: AuthRequest, res: Response) => {
   try {
     const customer = await customerRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!customer) {
@@ -193,7 +193,7 @@ router.put('/:id', authenticate, authorize('customer:update'), async (req: AuthR
 router.delete('/:id', authenticate, authorize('customer:delete'), async (req: AuthRequest, res: Response) => {
   try {
     const customer = await customerRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!customer) {

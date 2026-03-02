@@ -90,7 +90,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const opportunity = await opportunityRepository().findOne({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       relations: ['customer', 'owner', 'presales']
     });
 
@@ -159,7 +159,7 @@ router.post('/', authenticate, authorize('opportunity:create'), async (req: Auth
 router.put('/:id', authenticate, authorize('opportunity:update'), async (req: AuthRequest, res: Response) => {
   try {
     const opportunity = await opportunityRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!opportunity) {
@@ -213,7 +213,7 @@ router.post('/:id/change-stage', authenticate, async (req: AuthRequest, res: Res
   try {
     const { stage } = req.body;
     const opportunity = await opportunityRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!opportunity) {
@@ -243,7 +243,7 @@ router.post('/:id/change-approval', authenticate, async (req: AuthRequest, res: 
   try {
     const { changeType, beforeContent, afterContent, reason } = req.body;
     const opportunity = await opportunityRepository().findOne({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       relations: ['customer']
     });
 
@@ -289,7 +289,7 @@ router.post('/:id/change-approval', authenticate, async (req: AuthRequest, res: 
 router.delete('/:id', authenticate, authorize('opportunity:delete'), async (req: AuthRequest, res: Response) => {
   try {
     const opportunity = await opportunityRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!opportunity) {
