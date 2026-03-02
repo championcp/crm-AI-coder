@@ -91,7 +91,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const project = await projectRepository().findOne({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       relations: ['contract', 'contract.customer', 'manager', 'deputyManager', 'creator']
     });
 
@@ -172,7 +172,7 @@ router.post('/', authenticate, authorize('project:create'), async (req: AuthRequ
 router.put('/:id', authenticate, authorize('project:update'), async (req: AuthRequest, res: Response) => {
   try {
     const project = await projectRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!project) {
@@ -219,7 +219,7 @@ router.put('/:id', authenticate, authorize('project:update'), async (req: AuthRe
 router.post('/:id/approve', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const project = await projectRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!project) {
@@ -268,7 +268,7 @@ router.post('/:id/change-approval', authenticate, async (req: AuthRequest, res: 
   try {
     const { changeType, changeTitle, beforeContent, afterContent, reason } = req.body;
     const project = await projectRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!project) {
@@ -314,7 +314,7 @@ router.post('/:id/change-approval', authenticate, async (req: AuthRequest, res: 
 router.delete('/:id', authenticate, authorize('project:delete'), async (req: AuthRequest, res: Response) => {
   try {
     const project = await projectRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!project) {
@@ -341,7 +341,7 @@ router.delete('/:id', authenticate, authorize('project:delete'), async (req: Aut
 router.post('/:id/milestones', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { name, description, planDate, deliverables } = req.body;
-    const project = await projectRepository().findOne({ where: { id: req.params.id } });
+    const project = await projectRepository().findOne({ where: { id: String(req.params.id) } });
 
     if (!project) {
       return res.status(404).json({ success: false, message: '项目不存在' });
@@ -378,7 +378,7 @@ router.post('/:id/milestones', authenticate, async (req: AuthRequest, res: Respo
 router.post('/:id/members', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { userId, role, department, joinDate, workRatio } = req.body;
-    const project = await projectRepository().findOne({ where: { id: req.params.id } });
+    const project = await projectRepository().findOne({ where: { id: String(req.params.id) } });
 
     if (!project) {
       return res.status(404).json({ success: false, message: '项目不存在' });

@@ -81,7 +81,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const contract = await contractRepository().findOne({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       relations: ['customer', 'owner', 'creator', 'opportunity']
     });
 
@@ -170,7 +170,7 @@ router.post('/', authenticate, authorize('contract:create'), async (req: AuthReq
 router.put('/:id', authenticate, authorize('contract:update'), async (req: AuthRequest, res: Response) => {
   try {
     const contract = await contractRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!contract) {
@@ -214,7 +214,7 @@ router.put('/:id', authenticate, authorize('contract:update'), async (req: AuthR
 router.post('/:id/approve', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const contract = await contractRepository().findOne({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       relations: ['customer']
     });
 
@@ -267,7 +267,7 @@ router.post('/:id/approve', authenticate, async (req: AuthRequest, res: Response
 router.delete('/:id', authenticate, authorize('contract:delete'), async (req: AuthRequest, res: Response) => {
   try {
     const contract = await contractRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!contract) {

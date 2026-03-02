@@ -73,7 +73,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const user = await userRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!user) {
@@ -146,7 +146,7 @@ router.post('/', authenticate, authorize('system:user:create'), async (req: Auth
 router.put('/:id', authenticate, authorize('system:user:update'), async (req: AuthRequest, res: Response) => {
   try {
     const user = await userRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!user) {
@@ -185,7 +185,7 @@ router.put('/:id', authenticate, authorize('system:user:update'), async (req: Au
 router.delete('/:id', authenticate, authorize('system:user:delete'), async (req: AuthRequest, res: Response) => {
   try {
     const user = await userRepository().findOne({
-      where: { id: req.params.id }
+      where: { id: String(req.params.id) }
     });
 
     if (!user) {
