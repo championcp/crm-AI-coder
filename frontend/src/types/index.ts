@@ -1,246 +1,274 @@
 /**
- * 类型定义
+ * 类型定义文件
  * 企业项目全流程管理数据系统
  */
 
-// 用户相关类型
-export enum UserRole {
-  SYSTEM_ADMIN = 'system_admin',
-  SALES_MANAGER = 'sales_manager',
-  SALES_CONTROLLER = 'sales_controller',
-  DELIVERY_MANAGER = 'delivery_manager',
-  DEVELOPER = 'developer',
-  PROJECT_MANAGER = 'project_manager',
-  PROJECT_CONTROLLER = 'project_controller',
-  OPERATIONS_SUPERVISOR = 'operations_supervisor',
-  PROJECT_OPERATIONS = 'project_operations',
-  FINANCE_ACCOUNTANT = 'finance_accountant',
-  DEPARTMENT_HEAD = 'department_head',
-  SENIOR_MANAGEMENT = 'senior_management'
+// ===== 通用类型 =====
+
+/**
+ * API响应包装
+ */
+export interface ApiResponse<T> {
+  code: number;
+  message: string;
+  data: T;
 }
 
+/**
+ * 分页响应
+ */
+export interface PageResponse<T> {
+  list: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+/**
+ * 分页查询参数
+ */
+export interface PageParams {
+  page?: number;
+  pageSize?: number;
+  keyword?: string;
+}
+
+// ===== 用户相关类型 =====
+
+/**
+ * 用户信息
+ */
 export interface User {
   id: string;
   username: string;
   realName: string;
-  phone?: string;
-  email?: string;
-  role: UserRole;
+  email: string;
+  phone: string;
+  avatar?: string;
+  role: string;
   department: string;
-  status: string;
-  lastLoginTime?: string;
+  status: 'active' | 'inactive' | 'locked';
+  createdAt: string;
+  updatedAt: string;
 }
 
+/**
+ * 登录参数
+ */
 export interface LoginParams {
   username: string;
   password: string;
 }
 
-// 客户相关类型
-export enum CustomerLevel {
-  A = 'A',
-  B = 'B',
-  C = 'C',
-  D = 'D'
-}
+// ===== 客户管理类型 =====
 
-export enum CustomerScale {
-  LARGE = 'large',
-  MEDIUM = 'medium',
-  SMALL = 'small',
-  MICRO = 'micro'
-}
+/**
+ * 客户等级
+ */
+export type CustomerLevel = 'A' | 'B' | 'C' | 'D';
 
-export enum CustomerIndustry {
-  IT = 'IT',
-  FINANCE = 'finance',
-  MANUFACTURING = 'manufacturing',
-  RETAIL = 'retail',
-  EDUCATION = 'education',
-  HEALTHCARE = 'healthcare',
-  REAL_ESTATE = 'real_estate',
-  ENERGY = 'energy',
-  TRANSPORTATION = 'transportation',
-  OTHER = 'other'
-}
+/**
+ * 客户状态
+ */
+export type CustomerStatus = '潜在客户' | '正式客户' | '重点客户' | '流失客户';
 
-export enum CustomerStatus {
-  POTENTIAL = 'potential',
-  FORMAL = 'formal',
-  LOST = 'lost'
-}
-
+/**
+ * 客户信息
+ */
 export interface Customer {
   id: string;
-  customerCode: string;
-  customerName: string;
-  shortName?: string;
-  industry: CustomerIndustry;
-  scale: CustomerScale;
-  phone: string;
-  address?: string;
+  name: string;
+  code: string;
   level: CustomerLevel;
+  status: CustomerStatus;
+  industry: string;
+  scale: string;
+  website?: string;
+  address?: string;
+  province?: string;
+  city?: string;
+  district?: string;
+  description?: string;
+  tags?: string[];
+  // 联系人信息
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  contactPosition?: string;
+  // 系统字段
   ownerId: string;
   owner?: User;
-  status: CustomerStatus;
-  description?: string;
-  createTime: string;
-  updateTime: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// 商机相关类型
-export enum OpportunityLevel {
-  LEVEL_1 = '一级',
-  QUASI_LEVEL_1 = '准一级',
-  LEVEL_2 = '二级',
-  QUASI_LEVEL_2 = '准二级',
-  LEVEL_3 = '三级',
-  QUASI_LEVEL_3 = '准三级',
-  LEVEL_4 = '四级'
+/**
+ * 跟进记录
+ */
+export interface FollowUp {
+  id: string;
+  customerId: string;
+  customer?: Customer;
+  type: '电话' | '邮件' | '拜访' | '会议' | '其他';
+  content: string;
+  followUpTime: string;
+  nextFollowUpTime?: string;
+  reminderTime?: string;
+  result?: string;
+  createdBy: string;
+  creator?: User;
+  createdAt: string;
+  attachments?: Attachment[];
 }
 
-export enum OpportunitySource {
-  COLD_CALL = 'cold_call',
-  VISIT = 'visit',
-  REFERRAL = 'referral',
-  BIDDING = 'bidding',
-  OTHER = 'other'
+/**
+ * 附件
+ */
+export interface Attachment {
+  id: string;
+  name: string;
+  url: string;
+  size: number;
+  type: string;
+  createdAt: string;
 }
 
-export enum OpportunityStage {
-  REQUIREMENT = 'requirement',
-  PROPOSAL = 'proposal',
-  NEGOTIATION = 'negotiation',
-  CONTRACT_REVIEW = 'contract_review',
-  CONTRACT_APPROVAL = 'contract_approval',
-  SIGNED = 'signed'
-}
+// ===== 商机管理类型 =====
 
-export enum OpportunityStatus {
-  ACTIVE = 'active',
-  WON = 'won',
-  LOST = 'lost',
-  CANCELLED = 'cancelled'
-}
+/**
+ * 商机阶段
+ */
+export type OpportunityStage = '需求了解' | '方案制定' | '商务洽谈' | '合同评审' | '签约完成' | '商机关闭';
 
+/**
+ * 商机等级
+ */
+export type OpportunityLevel = 'A' | 'B' | 'C' | 'D';
+
+/**
+ * 商机信息
+ */
 export interface Opportunity {
   id: string;
-  opportunityCode: string;
-  opportunityName: string;
+  name: string;
+  code: string;
   customerId: string;
   customer?: Customer;
   amount: number;
-  level?: OpportunityLevel;
-  source: OpportunitySource;
+  level: OpportunityLevel;
   stage: OpportunityStage;
-  expectedSignDate?: string;
-  winRate?: number;
-  products?: string;
-  competitors?: string;
+  status: '进行中' | '已成交' | '已关闭';
+  expectCloseDate: string;
+  actualCloseDate?: string;
   description?: string;
+  // 系统字段
   ownerId: string;
   owner?: User;
-  presalesId?: string;
-  presales?: User;
-  status: OpportunityStatus;
-  lastFollowTime?: string;
-  createTime: string;
-  updateTime: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// 合同相关类型
-export enum ContractType {
-  PRODUCT_SALES = 'product_sales',
-  SERVICE = 'service',
-  CUSTOM_DEVELOPMENT = 'custom_development',
-  MIXED = 'mixed'
-}
+// ===== 合同管理类型 =====
 
-export enum PaymentMethod {
-  LUMP_SUM = 'lump_sum',
-  INSTALLMENT = 'installment',
-  MILESTONES = 'milestones'
-}
+/**
+ * 合同类型
+ */
+export type ContractType = '销售合同' | '采购合同' | '服务合同' | '其他合同';
 
-export enum ContractStatus {
-  DRAFT = 'draft',
-  PENDING_APPROVAL = 'pending_approval',
-  EXECUTING = 'executing',
-  COMPLETED = 'completed',
-  TERMINATED = 'terminated'
-}
+/**
+ * 合同状态
+ */
+export type ContractStatus = '草稿' | '审批中' | '已生效' | '执行中' | '已完成' | '已终止';
 
-export interface PaymentSchedule {
-  id: string;
-  contractId: string;
-  period: number;
-  planDate: string;
-  planAmount: string;
-  terms?: string;
-  actualDate?: string;
-  actualAmount?: string;
-  status: string;
-}
-
+/**
+ * 合同信息
+ */
 export interface Contract {
   id: string;
-  contractCode: string;
-  contractName: string;
-  contractType: ContractType;
+  name: string;
+  code: string;
+  type: ContractType;
+  status: ContractStatus;
   customerId: string;
   customer?: Customer;
-  opportunityId?: string;
-  opportunity?: Opportunity;
-  amount: string;
-  signDate: string;
+  amount: number;
+  signDate?: string;
   startDate: string;
   endDate: string;
-  paymentMethod: PaymentMethod;
   paymentTerms?: string;
-  status: ContractStatus;
-  contractFile?: string;
+  content?: string;
+  attachments?: Attachment[];
+  // 系统字段
   ownerId: string;
   owner?: User;
-  description?: string;
-  createTime: string;
-  updateTime: string;
-  paymentSchedules?: PaymentSchedule[];
+  createdAt: string;
+  updatedAt: string;
 }
 
-// 项目相关类型
-export enum ProjectType {
-  PRODUCT_DEVELOPMENT = 'product_development',
-  SERVICE_DELIVERY = 'service_delivery',
-  CONSULTING = 'consulting',
-  MIXED = 'mixed'
-}
+// ===== 项目管理类型 =====
 
-export enum ProjectLevel {
-  A = 'A',
-  B = 'B',
-  C = 'C'
-}
+/**
+ * 项目状态
+ */
+export type ProjectStatus = '筹备中' | '执行中' | '已暂停' | '验收中' | '已完成' | '已取消';
 
-export enum ProjectStatus {
-  PENDING_APPROVAL = 'pending_approval',
-  EXECUTING = 'executing',
-  ACCEPTANCE = 'acceptance',
-  COMPLETED = 'completed',
-  TERMINATED = 'terminated'
-}
+/**
+ * 项目等级
+ */
+export type ProjectLevel = 'A' | 'B' | 'C' | 'D';
 
-export interface ProjectMilestone {
+/**
+ * 项目类型
+ */
+export type ProjectType = '内部项目' | '外部项目';
+
+/**
+ * 项目信息
+ */
+export interface Project {
   id: string;
-  milestoneCode: string;
+  name: string;
+  code: string;
+  type: ProjectType;
+  status: ProjectStatus;
+  level: ProjectLevel;
+  customerId?: string;
+  customer?: Customer;
+  contractId?: string;
+  contract?: Contract;
+  amount?: number;
+  description?: string;
+  startDate: string;
+  planEndDate: string;
+  actualEndDate?: string;
+  // 负责人
+  managerId: string;
+  manager?: User;
+  // 系统字段
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 项目里程碑
+ */
+export interface Milestone {
+  id: string;
   projectId: string;
+  project?: Project;
   name: string;
   description?: string;
   planDate: string;
   actualDate?: string;
-  status: string;
+  status: '未开始' | '进行中' | '已完成';
   deliverables?: string;
+  createdAt: string;
 }
 
+/**
+ * 项目成员
+ */
 export interface ProjectMember {
   id: string;
   projectId: string;
@@ -250,110 +278,232 @@ export interface ProjectMember {
   department: string;
   joinDate: string;
   leaveDate?: string;
-  workRatio: string;
+  workRatio: number;
+  createdAt: string;
 }
 
-export interface Project {
-  id: string;
-  projectCode: string;
-  projectName: string;
-  projectType: ProjectType;
-  contractId: string;
-  contract?: Contract;
-  customerName: string;
-  managerId: string;
-  manager?: User;
-  deputyManagerId?: string;
-  deputyManager?: User;
-  status: ProjectStatus;
-  level: ProjectLevel;
-  planStartDate: string;
-  planEndDate: string;
-  actualStartDate?: string;
-  actualEndDate?: string;
-  budget: string;
-  contractAmount: string;
-  description?: string;
-  createTime: string;
-  updateTime: string;
-  milestones?: ProjectMilestone[];
-  members?: ProjectMember[];
-}
+// ===== 审批管理类型 =====
 
-// 审批相关类型
-export enum ApprovalType {
-  OPPORTUNITY_CHANGE = 'opportunity_change',
-  CONTRACT_APPROVAL = 'contract_approval',
-  PROJECT_SETUP = 'project_setup',
-  PROJECT_CHANGE = 'project_change',
-  PAYMENT_APPROVAL = 'payment_approval',
-  OTHER = 'other'
-}
+/**
+ * 审批类型
+ */
+export type ApprovalType = '合同审批' | '项目审批' | '商机变更' | '项目变更' | '费用申请';
 
-export enum ApprovalStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-  CANCELLED = 'cancelled'
-}
+/**
+ * 审批状态
+ */
+export type ApprovalStatus = '待审批' | '审批中' | '已通过' | '已驳回' | '已撤回';
 
+/**
+ * 审批信息
+ */
 export interface Approval {
   id: string;
-  approvalCode: string;
+  code: string;
   type: ApprovalType;
+  status: ApprovalStatus;
   title: string;
-  content: string;
+  description?: string;
+  // 关联数据
+  businessId: string;
+  businessType: string;
+  // 申请人
   applicantId: string;
   applicant?: User;
-  approverId?: string;
+  // 当前审批人
+  currentApproverId?: string;
+  currentApprover?: User;
+  // 审批记录
+  records?: ApprovalRecord[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 审批记录
+ */
+export interface ApprovalRecord {
+  id: string;
+  approvalId: string;
+  approverId: string;
   approver?: User;
-  status: ApprovalStatus;
+  action: 'submit' | 'approve' | 'reject' | 'transfer' | 'withdraw';
   comment?: string;
-  relatedId?: string;
-  relatedType?: string;
-  approvalTime?: string;
-  createTime: string;
-  updateTime: string;
+  createdAt: string;
 }
 
-// 分页响应类型
-export interface PageResponse<T> {
-  list: T[];
-  total: number;
-  page: number;
-  pageSize: number;
+// ===== 财务管理类型 =====
+
+/**
+ * 收支类型
+ */
+export type FinanceType = '收入' | '支出';
+
+/**
+ * 财务记录
+ */
+export interface Finance {
+  id: string;
+  code: string;
+  type: FinanceType;
+  category: string;
+  amount: number;
+  date: string;
+  customerId?: string;
+  customer?: Customer;
+  projectId?: string;
+  project?: Project;
+  contractId?: string;
+  contract?: Contract;
+  description?: string;
+  attachments?: Attachment[];
+  // 系统字段
+  createdBy: string;
+  creator?: User;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// API响应类型
-export interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data: T;
+// ===== 系统管理类型 =====
+
+/**
+ * 系统设置
+ */
+export interface SystemSetting {
+  id: string;
+  key: string;
+  value: string;
+  description?: string;
+  category: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// 仪表盘统计数据
+/**
+ * 操作日志
+ */
+export interface OperationLog {
+  id: string;
+  userId: string;
+  user?: User;
+  module: string;
+  action: string;
+  description?: string;
+  ip?: string;
+  userAgent?: string;
+  requestData?: string;
+  responseData?: string;
+  createdAt: string;
+}
+
+// ===== 仪表盘类型 =====
+
+/**
+ * 仪表盘统计数据
+ */
 export interface DashboardStats {
   customers: {
     total: number;
     formal: number;
+    potential: number;
+    vip: number;
+    churn: number;
   };
   opportunities: {
     total: number;
     active: number;
     won: number;
+    lost: number;
     amount: number;
-  };
-  contracts: {
-    total: number;
-    executing: number;
-    amount: number;
+    wonAmount: number;
   };
   projects: {
     total: number;
     executing: number;
     completed: number;
+    paused: number;
+  };
+  contracts: {
+    total: number;
+    draft: number;
+    effective: number;
+    completed: number;
+    amount: number;
   };
   approvals: {
     pending: number;
+    processing: number;
+    approved: number;
+    rejected: number;
   };
+}
+
+// ===== 查询参数类型 =====
+
+/**
+ * 客户查询参数
+ */
+export interface CustomerQueryParams extends PageParams {
+  level?: CustomerLevel;
+  status?: CustomerStatus;
+  industry?: string;
+}
+
+/**
+ * 商机查询参数
+ */
+export interface OpportunityQueryParams extends PageParams {
+  level?: OpportunityLevel;
+  stage?: OpportunityStage;
+  status?: string;
+  customerId?: string;
+  ownerId?: string;
+}
+
+/**
+ * 合同查询参数
+ */
+export interface ContractQueryParams extends PageParams {
+  contractType?: ContractType;
+  status?: ContractStatus;
+  customerId?: string;
+}
+
+/**
+ * 项目查询参数
+ */
+export interface ProjectQueryParams extends PageParams {
+  projectType?: ProjectType;
+  status?: ProjectStatus;
+  level?: ProjectLevel;
+  managerId?: string;
+}
+
+/**
+ * 审批查询参数
+ */
+export interface ApprovalQueryParams extends PageParams {
+  type?: ApprovalType;
+  status?: ApprovalStatus;
+}
+
+/**
+ * 财务查询参数
+ */
+export interface FinanceQueryParams extends PageParams {
+  type?: FinanceType;
+  category?: string;
+  startDate?: string;
+  endDate?: string;
+  customerId?: string;
+  projectId?: string;
+}
+
+// ===== 用户角色类型 =====
+export enum UserRole {
+  SYSTEM_ADMIN = 'system_admin',
+  PROJECT_MANAGER = 'project_manager',
+  SALES_MANAGER = 'sales_manager',
+  DEVELOPER = 'developer',
+  FINANCE_ACCOUNTANT = 'finance_accountant'
 }

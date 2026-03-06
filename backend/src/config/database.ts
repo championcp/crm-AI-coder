@@ -6,6 +6,7 @@
 import { DataSource } from 'typeorm';
 import { User } from '../entities/User';
 import { Customer } from '../entities/Customer';
+import { FollowUp } from '../entities/FollowUp';
 import { Opportunity } from '../entities/Opportunity';
 import { Contract, PaymentSchedule } from '../entities/Contract';
 import { Project, ProjectMilestone, ProjectMember } from '../entities/Project';
@@ -19,6 +20,7 @@ export const AppDataSource = new DataSource({
   entities: [
     User,
     Customer,
+    FollowUp,
     Opportunity,
     Contract,
     Project,

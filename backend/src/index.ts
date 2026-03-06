@@ -7,7 +7,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import bcrypt from 'bcryptjs';
 import { AppDataSource } from './config/database';
+import { User, UserRole, UserStatus } from './entities/User';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import customerRoutes from './routes/customers';
@@ -58,12 +60,43 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   res.status(500).json({ success: false, message: '服务器内部错误' });
 });
 
+// 初始化默认管理员用户
+async function initializeDefaultUsers() {
+  const userRepository = AppDataSource.getRepository(User);
+
+  // 检查是否已存在管理员用户
+  const existingAdmin = await userRepository.findOne({
+    where: { username: 'admin' }
+  });
+
+  if (!existingAdmin) {
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const adminUser = userRepository.create({
+      username: 'admin',
+      password: hashedPassword,
+      realName: '系统管理员',
+      phone: '13800138000',
+      email: 'admin@example.com',
+      role: UserRole.SYSTEM_ADMIN,
+      department: '技术部',
+      status: UserStatus.ACTIVE
+    });
+    await userRepository.save(adminUser);
+    console.log('✓ 默认管理员用户已创建: admin / admin123');
+  } else {
+    console.log('✓ 管理员用户已存在');
+  }
+}
+
 // 数据库连接和应用启动
 async function startServer() {
   try {
     // 连接数据库
     await AppDataSource.initialize();
     console.log('数据库连接成功！');
+
+    // 初始化默认用户
+    await initializeDefaultUsers();
 
     // 启动服务器
     app.listen(PORT, () => {

@@ -42,11 +42,11 @@ request.interceptors.request.use(
   }
 );
 
-// 响应拦截器 - 处理错误
+// 响应拦截器 - 处理错误和解包数据
 request.interceptors.response.use(
   (response) => {
-    // 直接返回响应，页面处理success
-    return response;
+    // 解包 data，直接返回 data 部分
+    return response.data;
   },
   (error) => {
     if (error.response?.status === 401) {

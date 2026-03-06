@@ -38,7 +38,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
       .leftJoinAndSelect('contract.opportunity', 'opportunity');
 
     if (keyword) {
-      queryBuilder.andWhere('(contract.contractName LIKE :keyword OR contract.contractCode LIKE :keyword OR customer.customerName LIKE :keyword)', {
+      queryBuilder.andWhere('(contract.contractName LIKE :keyword OR contract.contractCode LIKE :keyword OR customer.name LIKE :keyword)', {
         keyword: `%${keyword}%`
       });
     }
@@ -231,7 +231,7 @@ router.post('/:id/approve', authenticate, async (req: AuthRequest, res: Response
         contractId: contract.id,
         contractCode: contract.contractCode,
         contractName: contract.contractName,
-        customerName: contract.customer?.customerName,
+        customerName: contract.customer?.name,
         amount: contract.amount,
         signDate: contract.signDate,
         startDate: contract.startDate,
