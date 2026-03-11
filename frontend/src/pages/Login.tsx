@@ -13,7 +13,7 @@ import { LoginParams, User } from '../types';
 const { Title } = Typography;
 
 interface LoginPageProps {
-  onLogin: (user: User, token: string) => void;
+  onLogin?: (user: User, token: string) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
@@ -29,8 +29,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         message.success('登录成功');
-        onLogin(user, token);
-        navigate('/dashboard');
+        // 先更新状态，稍后跳转
+        if (onLogin) {
+          onLogin(user, token);
+        }
+        // 使用 setTimeout 确保状态更新后再跳转
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 100);
       }
     } catch (error: any) {
       message.error(error.response?.data?.message || '登录失败，请检查用户名和密码');

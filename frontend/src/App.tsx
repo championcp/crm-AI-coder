@@ -1,72 +1,50 @@
 /**
- * 企业项目全流程管理数据系统
- * 主应用入口
+ * 应用主入口
+ * 配置路由和全局布局
  */
 
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { ConfigProvider, App as AntApp } from 'antd';
+import React from 'react';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
+
+// 布局
 import MainLayout from './layouts/MainLayout';
-import LoginPage from './pages/Login';
-import DashboardPage from './pages/Dashboard';
-import CustomerListPage from './pages/customers/CustomerList';
-import OpportunityListPage from './pages/opportunities/OpportunityList';
-import { User } from './types';
 
-// 简单认证组件
-const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+// 页面
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
 
-  useEffect(() => {
-    // 检查本地存储的用户信息
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
+// 客户管理
+import CustomerList from './pages/customers/CustomerList';
 
-  const handleLogin = (newUser: User, token: string) => {
-    setUser(newUser);
-  };
+// 商机管理
+import OpportunityList from './pages/opportunities/OpportunityList';
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-  };
+// 合同管理
+import ContractList from './pages/contracts/ContractList';
 
-  if (loading) {
-    return null;
-  }
+// 项目管理
+import ProjectList from './pages/projects/ProjectList';
 
-  return (
-    <AppContext.Provider value={{ user, handleLogin, handleLogout }}>
-      {children}
-    </AppContext.Provider>
-  );
-};
+// 审批管理
+import ApprovalList from './pages/approvals/ApprovalList';
+import ApprovalFlowList from './pages/approvals/ApprovalFlowList';
 
-// 创建上下文
-interface AppContextType {
-  user: User | null;
-  handleLogin: (user: User, token: string) => void;
-  handleLogout: () => void;
-}
+// 财务管理
+import FinanceDashboard from './pages/finance/FinanceDashboard';
 
-export const AppContext = React.createContext<AppContextType>({
-  user: null,
-  handleLogin: () => {},
-  handleLogout: () => {}
-});
+// 系统管理
+import UserManagement from './pages/system/UserList';
+import RoleManagement from './pages/system/RoleList';
 
-// 路由守卫组件
+/**
+ * 路由守卫组件
+ * 检查用户是否已登录
+ */
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = React.useContext(AppContext);
   const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
 
   if (!token || !user) {
     return <Navigate to="/login" replace />;
@@ -75,57 +53,70 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   return <>{children}</>;
 };
 
-// 主布局路由
-const MainLayoutRoute: React.FC = () => {
-  const { user, handleLogout } = React.useContext(AppContext);
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
+/**
+ * 主应用组件
+ */
+const App: React.FC = () => {
   return (
-    <MainLayout user={user} onLogout={handleLogout}>
-      <Routes>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/customers" element={<CustomerListPage />} />
-        <Route path="/opportunities" element={<OpportunityListPage />} />
-        <Route path="/contracts" element={<div>合同管理</div>} />
-        <Route path="/projects" element={<div>项目管理</div>} />
-        <Route path="/approvals" element={<div>审批中心</div>} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </MainLayout>
-  );
-};
+    <ConfigProvider
+      locale={zhCN}
+      theme={{
+        token: {
+          colorPrimary: '#1890ff',
+          borderRadius: 4,
+        },
+      }}
+    >
+      <HashRouter>
+        <Routes>
+          {/* 登录页面 */}
+          <Route path="/login" element={<Login />} />
 
-function App() {
-  return (
-    <ConfigProvider locale={zhCN}>
-      <AntApp>
-        <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/login" element={<LoginPageWrapper />} />
-              <Route path="/*" element={<MainLayoutRoute />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </AntApp>
+          {/* 主布局路由 */}
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <MainLayout />
+              </PrivateRoute>
+            }
+          >
+            {/* 默认重定向到仪表盘 */}
+            <Route index element={<Navigate to="/dashboard" replace />} />
+
+            {/* 仪表盘 */}
+            <Route path="dashboard" element={<Dashboard />} />
+
+            {/* 客户管理 */}
+            <Route path="customers" element={<CustomerList />} />
+
+            {/* 商机管理 */}
+            <Route path="opportunities" element={<OpportunityList />} />
+
+            {/* 合同管理 */}
+            <Route path="contracts" element={<ContractList />} />
+
+            {/* 项目管理 */}
+            <Route path="projects" element={<ProjectList />} />
+
+            {/* 审批流程 */}
+            <Route path="approvals" element={<ApprovalList />} />
+            <Route path="approval-flows" element={<ApprovalFlowList />} />
+
+            {/* 财务管理 */}
+            <Route path="finance" element={<FinanceDashboard />} />
+
+            {/* 系统管理 */}
+            <Route path="system/users" element={<UserManagement />} />
+            <Route path="system/roles" element={<RoleManagement />} />
+
+            {/* 404 页面 */}
+            <Route path="*" element={<div>页面未找到</div>} />
+          </Route>
+        </Routes>
+      </HashRouter>
     </ConfigProvider>
   );
-}
-
-// 登录页面包装器
-const LoginPageWrapper: React.FC = () => {
-  const { handleLogin } = React.useContext(AppContext);
-  const navigate = useNavigate();
-
-  const onLogin = (user: User, token: string) => {
-    handleLogin(user, token);
-    navigate('/dashboard');
-  };
-
-  return <LoginPage onLogin={onLogin} />;
 };
 
 export default App;

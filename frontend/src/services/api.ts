@@ -42,11 +42,11 @@ request.interceptors.request.use(
   }
 );
 
-// 响应拦截器 - 处理错误
+// 响应拦截器 - 处理错误和解包数据
 request.interceptors.response.use(
   (response) => {
-    // 直接返回响应，页面处理success
-    return response;
+    // 解包 data，直接返回 data 部分
+    return response.data;
   },
   (error) => {
     if (error.response?.status === 401) {
@@ -69,16 +69,30 @@ export const authService = {
 
 // ===== 用户服务 =====
 export const userService = {
-  getList: (params?: { page?: number; pageSize?: number; keyword?: string; role?: string; department?: string }) =>
+  getList: (params?: { page?: number; pageSize?: number; keyword?: string; role?: string; department?: string; status?: string }) =>
     request.get<ApiResponse<PageResponse<User>>>('/users', { params }),
   getById: (id: string) => request.get<ApiResponse<User>>(`/users/${id}`),
   create: (data: Partial<User> & { password: string }) => request.post('/users', data),
   update: (id: string, data: Partial<User>) => request.put(`/users/${id}`, data),
   delete: (id: string) => request.delete(`/users/${id}`),
+  changePassword: (id: string, oldPassword: string, newPassword: string) =>
+    request.put(`/users/${id}/password`, { oldPassword, newPassword }),
+  toggleStatus: (id: string) => request.put(`/users/${id}/toggle-status`),
   getOptions: (params?: { role?: string; department?: string }) =>
     request.get<ApiResponse<User[]>>('/users/options/list', { params }),
   getRoles: () => request.get<ApiResponse<{ value: string; label: string }[]>>('/users/options/roles'),
   getDepartments: () => request.get<ApiResponse<{ value: string; label: string }[]>>('/users/options/departments')
+};
+
+// ===== 角色服务 =====
+export const roleService = {
+  getList: (params?: { page?: number; pageSize?: number; keyword?: string; status?: string }) =>
+    request.get<ApiResponse<PageResponse<Role>>>('/roles', { params }),
+  getById: (id: string) => request.get<ApiResponse<Role>>(`/roles/${id}`),
+  create: (data: Partial<Role>) => request.post('/roles', data),
+  update: (id: string, data: Partial<Role>) => request.put(`/roles/${id}`, data),
+  delete: (id: string) => request.delete(`/roles/${id}`),
+  getPermissions: () => request.get<ApiResponse<any[]>>('/roles/permissions/list')
 };
 
 // ===== 客户管理服务 =====
@@ -171,6 +185,18 @@ export const approvalService = {
     request.post(`/approvals/${id}/process`, { action, comment }),
   cancel: (id: string) => request.post(`/approvals/${id}/cancel`),
   getStats: () => request.get<ApiResponse<any>>('/approvals/stats/summary')
+};
+
+// ===== 审批流程服务 =====
+export const approvalFlowService = {
+  getList: (params?: { page?: number; pageSize?: number; keyword?: string; businessType?: string; status?: string }) =>
+    request.get<ApiResponse<PageResponse<ApprovalFlow>>>('/approval-flows', { params }),
+  getById: (id: string) => request.get<ApiResponse<ApprovalFlow>>(`/approval-flows/${id}`),
+  create: (data: Partial<ApprovalFlow>) => request.post('/approval-flows', data),
+  update: (id: string, data: Partial<ApprovalFlow>) => request.put(`/approval-flows/${id}`, data),
+  delete: (id: string) => request.delete(`/approval-flows/${id}`),
+  toggleStatus: (id: string) => request.put(`/approval-flows/${id}/toggle-status`),
+  getBusinessTypes: () => request.get<ApiResponse<{ value: string; label: string }[]>>('/approval-flows/business-types/list')
 };
 
 // ===== 仪表盘服务 =====

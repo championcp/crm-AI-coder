@@ -8,6 +8,7 @@ import bcrypt from 'bcryptjs';
 import { AppDataSource } from '../config/database';
 import { User, UserRole, UserStatus } from '../entities/User';
 import { AuthRequest, authenticate, authorize } from '../middlewares/auth';
+import * as userService from '../services/userService';
 
 const router = Router();
 const userRepository = () => AppDataSource.getRepository(User);
@@ -19,43 +20,21 @@ const userRepository = () => AppDataSource.getRepository(User);
 router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { page = 1, pageSize = 10, keyword, role, department, status } = req.query;
-    const skip = (Number(page) - 1) * Number(pageSize);
 
-    const queryBuilder = userRepository().createQueryBuilder('user');
-
-    if (keyword) {
-      queryBuilder.andWhere('(user.username LIKE :keyword OR user.realName LIKE :keyword OR user.email LIKE :keyword)', {
-        keyword: `%${keyword}%`
-      });
-    }
-
-    if (role) {
-      queryBuilder.andWhere('user.role = :role', { role });
-    }
-    if (department) {
-      queryBuilder.andWhere('user.department = :department', { department });
-    }
-    if (status) {
-      queryBuilder.andWhere('user.status = :status', { status });
-    }
-
-    const [users, total] = await queryBuilder
-      .orderBy('user.createTime', 'DESC')
-      .skip(skip)
-      .take(Number(pageSize))
-      .getManyAndCount();
-
-    // 移除密码字段
-    const sanitizedUsers = users.map(user => ({
-      ...user,
-      password: undefined
-    }));
+    const result = await userService.getUserList({
+      page: Number(page),
+      pageSize: Number(pageSize),
+      keyword: keyword as string,
+      role: role as string,
+      department: department as string,
+      status: status as string
+    });
 
     res.json({
       success: true,
       data: {
-        list: sanitizedUsers,
-        total,
+        list: result.list,
+        total: result.total,
         page: Number(page),
         pageSize: Number(pageSize)
       }
@@ -72,16 +51,14 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
  */
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await userRepository().findOne({
-      where: { id: String(req.params.id) }
-    });
+    const userId = String(req.params.id);
+    const user = await userService.getUserById(userId);
 
     if (!user) {
       return res.status(404).json({ success: false, message: '用户不存在' });
     }
 
-    const { password, ...userWithoutPassword } = user;
-    res.json({ success: true, data: userWithoutPassword });
+    res.json({ success: true, data: user });
   } catch (error) {
     console.error('获取用户详情错误:', error);
     res.status(500).json({ success: false, message: '服务器错误' });
@@ -100,27 +77,15 @@ router.post('/', authenticate, authorize('system:user:create'), async (req: Auth
       return res.status(400).json({ success: false, message: '请填写必填信息' });
     }
 
-    // 检查用户名是否已存在
-    const existingUser = await userRepository().findOne({ where: { username } });
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: '用户名已存在' });
-    }
-
-    // 加密密码
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = userRepository().create({
+    const user = await userService.createUser({
       username,
-      password: hashedPassword,
+      password,
       realName,
-      phone: phone || '',
-      email: email || '',
-      role: role || UserRole.SALES_MANAGER,
-      department: department || '销售部',
-      status: UserStatus.ACTIVE
+      phone,
+      email,
+      role,
+      department
     });
-
-    await userRepository().save(user);
 
     res.status(201).json({
       success: true,
@@ -133,9 +98,9 @@ router.post('/', authenticate, authorize('system:user:create'), async (req: Auth
         department: user.department
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('创建用户错误:', error);
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(400).json({ success: false, message: error.message || '创建用户失败' });
   }
 });
 
@@ -145,17 +110,10 @@ router.post('/', authenticate, authorize('system:user:create'), async (req: Auth
  */
 router.put('/:id', authenticate, authorize('system:user:update'), async (req: AuthRequest, res: Response) => {
   try {
-    const user = await userRepository().findOne({
-      where: { id: String(req.params.id) }
-    });
-
-    if (!user) {
-      return res.status(404).json({ success: false, message: '用户不存在' });
-    }
-
+    const userId = String(req.params.id);
     const { realName, phone, email, role, department, status } = req.body;
 
-    Object.assign(user, {
+    const user = await userService.updateUser(userId, {
       realName,
       phone,
       email,
@@ -164,17 +122,14 @@ router.put('/:id', authenticate, authorize('system:user:update'), async (req: Au
       status
     });
 
-    await userRepository().save(user);
-
-    const { password, ...userWithoutPassword } = user;
     res.json({
       success: true,
       message: '用户更新成功',
-      data: userWithoutPassword
+      data: user
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('更新用户错误:', error);
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(400).json({ success: false, message: error.message || '用户更新失败' });
   }
 });
 
@@ -197,12 +152,73 @@ router.delete('/:id', authenticate, authorize('system:user:delete'), async (req:
       return res.status(400).json({ success: false, message: '不能删除当前登录用户' });
     }
 
-    await userRepository().remove(user);
+    await userService.deleteUser(user.id);
 
     res.json({ success: true, message: '用户删除成功' });
   } catch (error) {
     console.error('删除用户错误:', error);
     res.status(500).json({ success: false, message: '服务器错误' });
+  }
+});
+
+/**
+ * 修改用户密码
+ * PUT /api/users/:id/password
+ */
+router.put('/:id/password', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const userId = String(req.params.id);
+
+    // 用户只能修改自己的密码，管理员可以修改所有用户的密码
+    if (userId !== req.user!.id && !req.user!.role.includes('admin')) {
+      return res.status(403).json({ success: false, message: '权限不足' });
+    }
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: '请提供旧密码和新密码' });
+    }
+
+    // 如果是管理员重置密码，不需要旧密码
+    if (req.user!.role.includes('admin') && userId !== req.user!.id) {
+      await userService.resetUserPassword(userId, newPassword);
+      res.json({ success: true, message: '密码重置成功' });
+    } else {
+      await userService.changeUserPassword(userId, oldPassword, newPassword);
+      res.json({ success: true, message: '密码修改成功' });
+    }
+  } catch (error: any) {
+    console.error('修改密码错误:', error);
+    res.status(400).json({ success: false, message: error.message || '密码修改失败' });
+  }
+});
+
+/**
+ * 切换用户状态
+ * PUT /api/users/:id/toggle-status
+ */
+router.put('/:id/toggle-status', authenticate, authorize('system:user:update'), async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = String(req.params.id);
+
+    // 不能切换自己的状态
+    if (userId === req.user!.id) {
+      return res.status(400).json({ success: false, message: '不能切换当前登录用户的状态' });
+    }
+
+    const user = await userService.toggleUserStatus(userId);
+
+    res.json({
+      success: true,
+      message: '用户状态切换成功',
+      data: {
+        id: user.id,
+        status: user.status
+      }
+    });
+  } catch (error: any) {
+    console.error('切换用户状态错误:', error);
+    res.status(400).json({ success: false, message: error.message || '状态切换失败' });
   }
 });
 
@@ -241,11 +257,7 @@ router.get('/options/list', authenticate, async (req: AuthRequest, res: Response
  */
 router.get('/options/roles', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const roles = Object.values(UserRole).map(role => ({
-      value: role,
-      label: getRoleLabel(role)
-    }));
-
+    const roles = userService.getRoleOptions();
     res.json({ success: true, data: roles });
   } catch (error) {
     console.error('获取角色列表错误:', error);
@@ -253,39 +265,13 @@ router.get('/options/roles', authenticate, async (req: AuthRequest, res: Respons
   }
 });
 
-// 角色标签映射
-function getRoleLabel(role: UserRole): string {
-  const roleLabels: Record<UserRole, string> = {
-    [UserRole.SYSTEM_ADMIN]: '系统管理员',
-    [UserRole.SALES_MANAGER]: '销售经理',
-    [UserRole.SALES_CONTROLLER]: '销售管控',
-    [UserRole.DELIVERY_MANAGER]: '交付经理',
-    [UserRole.DEVELOPER]: '开发工程师',
-    [UserRole.PROJECT_MANAGER]: '项目经理',
-    [UserRole.PROJECT_CONTROLLER]: '项目管控',
-    [UserRole.OPERATIONS_SUPERVISOR]: '运营主管',
-    [UserRole.PROJECT_OPERATIONS]: '项目运营管控',
-    [UserRole.FINANCE_ACCOUNTANT]: '财务会计',
-    [UserRole.DEPARTMENT_HEAD]: '部门负责人',
-    [UserRole.SENIOR_MANAGEMENT]: '高层管理人员'
-  };
-  return roleLabels[role] || role;
-}
-
-// 部门列表
+/**
+ * 获取部门列表
+ * GET /api/users/departments
+ */
 router.get('/options/departments', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const departments = [
-      '销售部',
-      '售前部',
-      '交付部',
-      '开发部',
-      '管控部',
-      '运营部',
-      '财务部',
-      '信息化部'
-    ].map(dept => ({ value: dept, label: dept }));
-
+    const departments = userService.getDepartmentOptions();
     res.json({ success: true, data: departments });
   } catch (error) {
     console.error('获取部门列表错误:', error);

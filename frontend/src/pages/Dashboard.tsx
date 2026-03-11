@@ -1,109 +1,215 @@
 /**
  * 仪表盘页面
- * 企业项目全流程管理数据系统
+ * 展示系统概览和关键指标
  */
 
-import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Statistic, Table, Tag, Progress, Typography, Spin } from 'antd';
+import React, { useState, useEffect } from 'react';
 import {
-  TeamOutlined,
+  Row,
+  Col,
+  Card,
+  Statistic,
+  Table,
+  Tag,
+  Typography,
+  Progress,
+  Badge
+} from 'antd';
+import {
+  UserOutlined,
   FileTextOutlined,
-  DollarOutlined,
   ProjectOutlined,
-  CheckCircleOutlined,
   ClockCircleOutlined,
-  RiseOutlined
+  CheckCircleOutlined,
+  DollarOutlined
 } from '@ant-design/icons';
-import { dashboardService } from '../services/api';
-import { DashboardStats } from '../types';
+import { dashboardService, opportunityService, projectService } from '../services/api';
+import type { DashboardStats, Opportunity, Project } from '../types';
 
 const { Title, Text } = Typography;
 
-const DashboardPage: React.FC = () => {
+const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recentOpportunities, setRecentOpportunities] = useState<Opportunity[]>([]);
+  const [recentProjects, setRecentProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    fetchStats();
+    fetchDashboardData();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const response = await dashboardService.getStats();
-      if (response.success) {
-        setStats(response.data);
-      }
+      setLoading(true);
+      // 获取统计数据
+      const statsRes = await dashboardService.getStats();
+      setStats(statsRes.data || null);
+      
+      // 获取最近商机（取前5条）
+      const oppRes = await opportunityService.getList({ page: 1, pageSize: 5 });
+      setRecentOpportunities(oppRes.data?.list || []);
+      
+      // 获取最近项目（取前5条）
+      const projRes = await projectService.getList({ page: 1, pageSize: 5 });
+      setRecentProjects(projRes.data?.list || []);
     } catch (error) {
-      console.error('获取统计数据失败:', error);
+      console.error('获取仪表盘数据失败:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading || !stats) {
-    <div style={{ textAlign: 'center', padding: 100 }}>
-      <Spin size="large" />
-    </div>;
-  }
-
-  const formatCurrency = (amount: number) => {
-    if (amount >= 10000) {
-      return `¥${(amount / 10000).toFixed(2)}万`;
-    }
-    return `¥${amount.toFixed(2)}`;
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('zh-CN', {
+      style: 'currency',
+      currency: 'CNY',
+      minimumFractionDigits: 2
+    }).format(value);
   };
 
-  return (
-    <div>
-      <Title level={4} style={{ marginBottom: 24 }}>
-        仪表盘概览
-      </Title>
+  const getStageColor = (stage: string) => {
+    const colors: Record<string, string> = {
+      '需求了解': 'blue',
+      '方案制定': 'cyan',
+      '商务洽谈': 'orange',
+      '合同评审': 'purple',
+      '签约完成': 'green'
+    };
+    return colors[stage] || 'default';
+  };
 
-      {/* 统计卡片 */}
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      '执行中': 'processing',
+      '已暂停': 'warning',
+      '已完成': 'success',
+      '已取消': 'error'
+    };
+    return colors[status] || 'default';
+  };
+
+  // 销售漏斗数据
+  const funnelData = [
+    { stage: '需求了解', count: 80, color: '#1890ff' },
+    { stage: '方案制定', count: 60, color: '#52c41a' },
+    { stage: '商务洽谈', count: 40, color: '#faad14' },
+    { stage: '合同评审', count: 20, color: '#fa541c' },
+    { stage: '签约完成', count: 10, color: '#722ed1' }
+  ];
+
+  // 项目状态分布数据
+  const projectStatusData = [
+    { name: '执行中', value: 15, color: '#1890ff' },
+    { name: '验收中', value: 3, color: '#faad14' },
+    { name: '已完成', value: 2, color: '#52c41a' }
+  ];
+
+  const opportunityColumns = [
+    {
+      title: '商机名称',
+      dataIndex: 'name',
+      key: 'name',
+      ellipsis: true
+    },
+    {
+      title: '客户',
+      dataIndex: 'customer',
+      key: 'customer',
+      ellipsis: true,
+      render: (customer: any) => customer?.name || '-'
+    },
+    {
+      title: '金额',
+      dataIndex: 'amount',
+      key: 'amount',
+      align: 'right' as const,
+      render: (amount: number) => formatCurrency(amount)
+    },
+    {
+      title: '阶段',
+      dataIndex: 'stage',
+      key: 'stage',
+      render: (stage: string) => <Tag color={getStageColor(stage)}>{stage}</Tag>
+    }
+  ];
+
+  const projectColumns = [
+    {
+      title: '项目名称',
+      dataIndex: 'name',
+      key: 'name',
+      ellipsis: true
+    },
+    {
+      title: '客户',
+      dataIndex: 'customer',
+      key: 'customer',
+      ellipsis: true,
+      render: (customer: any) => customer?.name || '-'
+    },
+    {
+      title: '项目经理',
+      dataIndex: 'manager',
+      key: 'manager',
+      render: (manager: any) => manager?.realName || '-'
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => <Badge status={getStatusColor(status)} text={status} />
+    }
+  ];
+
+  return (
+    <div style={{ width: '100%' }}>
+      <Title level={4} style={{ marginBottom: 24 }}>仪表盘概览</Title>
+
+      {/* 第一行统计 */}
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
+          <Card hoverable style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
             <Statistic
               title="客户总数"
-              value={stats?.customers.total || 0}
-              prefix={<TeamOutlined />}
+              value={stats?.customers?.total || 0}
+              prefix={<UserOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />
-            <Text type="secondary">正式客户: {stats?.customers.formal || 0}</Text>
+            <Text type="secondary">正式客户: {stats?.customers?.formal || 0}</Text>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
+          <Card hoverable style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
             <Statistic
               title="商机总数"
-              value={stats?.opportunities.total || 0}
+              value={stats?.opportunities?.total || 0}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: '#52c41a' }}
             />
-            <Text type="secondary">进行中: {stats?.opportunities.active || 0}</Text>
+            <Text type="secondary">进行中: {stats?.opportunities?.active || 0}</Text>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
+          <Card hoverable style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
             <Statistic
               title="商机金额"
-              value={stats?.opportunities.amount || 0}
+              value={stats?.opportunities?.amount || 0}
               prefix={<DollarOutlined />}
               valueStyle={{ color: '#faad14' }}
               formatter={(value) => formatCurrency(Number(value))}
             />
-            <Text type="secondary">已成交: {stats?.opportunities.won || 0}</Text>
+            <Text type="secondary">已成交: {stats?.opportunities?.won || 0}</Text>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
+          <Card hoverable style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
             <Statistic
               title="项目总数"
-              value={stats?.projects.total || 0}
+              value={stats?.projects?.total || 0}
               prefix={<ProjectOutlined />}
               valueStyle={{ color: '#722ed1' }}
             />
-            <Text type="secondary">执行中: {stats?.projects.executing || 0}</Text>
+            <Text type="secondary">执行中: {stats?.projects?.executing || 0}</Text>
           </Card>
         </Col>
       </Row>
@@ -111,40 +217,40 @@ const DashboardPage: React.FC = () => {
       {/* 第二行统计 */}
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
+          <Card hoverable style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
             <Statistic
               title="执行中项目"
-              value={stats?.projects.executing || 0}
+              value={stats?.projects?.executing || 0}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: '#13c2c2' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
+          <Card hoverable style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
             <Statistic
               title="已完成项目"
-              value={stats?.projects.completed || 0}
+              value={stats?.projects?.completed || 0}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: '#52c41a' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
+          <Card hoverable style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
             <Statistic
               title="合同总数"
-              value={stats?.contracts.total || 0}
+              value={stats?.contracts?.total || 0}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: '#fa8c16' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
+          <Card hoverable style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
             <Statistic
               title="待审批"
-              value={stats?.approvals.pending || 0}
+              value={stats?.approvals?.pending || 0}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: '#f5222d' }}
             />
@@ -152,71 +258,75 @@ const DashboardPage: React.FC = () => {
         </Col>
       </Row>
 
-      {/* 销售漏斗 */}
+      {/* 图表区域 */}
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} lg={12}>
-          <Card title="销售漏斗" extra={<a href="/opportunities">查看详情</a>}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Text style={{ width: 80 }}>需求了解</Text>
-                <Progress percent={80} status="active" strokeColor="#1890ff" />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Text style={{ width: 80 }}>方案制定</Text>
-                <Progress percent={60} status="active" strokeColor="#52c41a" />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Text style={{ width: 80 }}>商务洽谈</Text>
-                <Progress percent={40} status="active" strokeColor="#faad14" />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Text style={{ width: 80 }}>合同评审</Text>
-                <Progress percent={20} status="active" strokeColor="#fa8c16" />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Text style={{ width: 80 }}>签约完成</Text>
-                <Progress percent={10} status="active" strokeColor="#722ed1" />
-              </div>
+          <Card
+            title="销售漏斗"
+            extra={<a href="#/opportunities">查看详情</a>}
+            loading={loading}
+            style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}
+          >
+            <div style={{ padding: '20px 0' }}>
+              {funnelData.map((item) => (
+                <div key={item.stage} style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <Text>{item.stage}</Text>
+                    <Text strong>{item.count}%</Text>
+                  </div>
+                  <Progress
+                    percent={item.count}
+                    strokeColor={item.color}
+                    trailColor="#f0f0f0"
+                    strokeWidth={12}
+                    showInfo={false}
+                  />
+                </div>
+              ))}
             </div>
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="项目状态分布" extra={<a href="/projects">查看详情</a>}>
-            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: 200 }}>
-              <div style={{ textAlign: 'center' }}>
-                <Progress type="circle" percent={75} format={() => '75%'} />
-                <div style={{ marginTop: 8 }}>执行中</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <Progress type="circle" percent={15} status="exception" format={() => '15%'} />
-                <div style={{ marginTop: 8 }}>验收中</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <Progress type="circle" percent={10} status="success" format={() => '10%'} />
-                <div style={{ marginTop: 8 }}>已完成</div>
-              </div>
+          <Card
+            title="项目状态分布"
+            extra={<a href="#/projects">查看详情</a>}
+            loading={loading}
+            style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-around', padding: '20px 0' }}>
+              {projectStatusData.map((item) => (
+                <div key={item.name} style={{ textAlign: 'center' }}>
+                  <Progress
+                    type="circle"
+                    percent={item.value}
+                    strokeColor={item.color}
+                    trailColor="#f0f0f0"
+                    strokeWidth={10}
+                    format={() => <Text strong style={{ fontSize: 20, color: item.color }}>{item.value}%</Text>}
+                  />
+                  <div style={{ marginTop: 8 }}>
+                    <Text>{item.name}</Text>
+                  </div>
+                </div>
+              ))}
             </div>
           </Card>
         </Col>
       </Row>
 
-      {/* 最近活动 */}
+      {/* 最近数据表格 */}
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} lg={12}>
-          <Card title="最近商机" extra={<a href="/opportunities">更多</a>}>
+          <Card
+            title="最近商机"
+            extra={<a href="#/opportunities">更多</a>}
+            loading={loading}
+            style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}
+          >
             <Table
-              dataSource={[]}
-              columns={[
-                { title: '商机名称', dataIndex: 'name', key: 'name' },
-                { title: '客户', dataIndex: 'customer', key: 'customer' },
-                { title: '金额', dataIndex: 'amount', key: 'amount' },
-                {
-                  title: '阶段',
-                  dataIndex: 'stage',
-                  key: 'stage',
-                  render: (stage: string) => <Tag>{stage}</Tag>
-                }
-              ]}
+              dataSource={recentOpportunities}
+              columns={opportunityColumns}
+              rowKey="id"
               pagination={false}
               size="small"
               locale={{ emptyText: '暂无数据' }}
@@ -224,20 +334,16 @@ const DashboardPage: React.FC = () => {
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="最近项目" extra={<a href="/projects">更多</a>}>
+          <Card
+            title="最近项目"
+            extra={<a href="#/projects">更多</a>}
+            loading={loading}
+            style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}
+          >
             <Table
-              dataSource={[]}
-              columns={[
-                { title: '项目名称', dataIndex: 'name', key: 'name' },
-                { title: '客户', dataIndex: 'customer', key: 'customer' },
-                { title: '项目经理', dataIndex: 'manager', key: 'manager' },
-                {
-                  title: '状态',
-                  dataIndex: 'status',
-                  key: 'status',
-                  render: (status: string) => <Tag color={status === '执行中' ? 'blue' : 'green'}>{status}</Tag>
-                }
-              ]}
+              dataSource={recentProjects}
+              columns={projectColumns}
+              rowKey="id"
               pagination={false}
               size="small"
               locale={{ emptyText: '暂无数据' }}
@@ -249,4 +355,4 @@ const DashboardPage: React.FC = () => {
   );
 };
 
-export default DashboardPage;
+export default Dashboard;
