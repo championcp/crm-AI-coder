@@ -17,7 +17,10 @@ import {
   Popconfirm,
   Typography,
   DatePicker,
-  InputNumber
+  InputNumber,
+  Card,
+  Row,
+  Col
 } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { contractService, customerService, userService } from '../../services/api';
@@ -285,8 +288,8 @@ const ContractListPage: React.FC = () => {
   ];
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+    <div style={{ width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
         <Title level={4} style={{ margin: 0 }}>
           合同管理
         </Title>
@@ -296,46 +299,62 @@ const ContractListPage: React.FC = () => {
       </div>
 
       {/* 搜索表单 */}
-      <Form layout="inline" onFinish={handleSearch} style={{ marginBottom: 16 }}>
-        <Form.Item name="keyword" label="关键词">
-          <Input placeholder="合同编号/名称" style={{ width: 160 }} />
-        </Form.Item>
-        <Form.Item name="contractType" label="合同类型">
-          <Select placeholder="请选择" style={{ width: 120 }} allowClear>
-            <Option value="SALES">销售合同</Option>
-            <Option value="PURCHASE">采购合同</Option>
-            <Option value="SERVICE">服务合同</Option>
-            <Option value="CONSULTING">咨询合同</Option>
-            <Option value="OTHER">其他</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item name="status" label="状态">
-          <Select placeholder="请选择" style={{ width: 120 }} allowClear>
-            <Option value="DRAFT">草稿</Option>
-            <Option value="PENDING_APPROVAL">待审批</Option>
-            <Option value="APPROVED">已审批</Option>
-            <Option value="REJECTED">已驳回</Option>
-            <Option value="SIGNED">已签订</Option>
-            <Option value="COMPLETED">已履行</Option>
-            <Option value="TERMINATED">已终止</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item name="customerId" label="客户">
-          <Select placeholder="请选择客户" style={{ width: 160 }} allowClear showSearch>
-            {customerOptions.map((c) => (
-              <Option key={c.id} value={c.id}>{c.customerName}</Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item name="dateRange" label="签订日期">
-          <RangePicker />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-            搜索
-          </Button>
-        </Form.Item>
-      </Form>
+      <Card style={{ marginBottom: 16 }}>
+        <Form layout="inline" onFinish={handleSearch}>
+          <Row gutter={[16, 16]} align="middle">
+            <Col xs={24} sm={12} md={6} lg={5}>
+              <Form.Item name="keyword" label="关键词" style={{ marginBottom: 0 }}>
+                <Input placeholder="合同编号/名称" style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={4}>
+              <Form.Item name="contractType" label="合同类型" style={{ marginBottom: 0 }}>
+                <Select placeholder="请选择" style={{ width: "100%" }} allowClear>
+                  <Option value="SALES">销售合同</Option>
+                  <Option value="PURCHASE">采购合同</Option>
+                  <Option value="SERVICE">服务合同</Option>
+                  <Option value="CONSULTING">咨询合同</Option>
+                  <Option value="OTHER">其他</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={4}>
+              <Form.Item name="status" label="状态" style={{ marginBottom: 0 }}>
+                <Select placeholder="请选择" style={{ width: "100%" }} allowClear>
+                  <Option value="DRAFT">草稿</Option>
+                  <Option value="PENDING_APPROVAL">待审批</Option>
+                  <Option value="APPROVED">已审批</Option>
+                  <Option value="REJECTED">已驳回</Option>
+                  <Option value="SIGNED">已签订</Option>
+                  <Option value="COMPLETED">已履行</Option>
+                  <Option value="TERMINATED">已终止</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={5}>
+              <Form.Item name="customerId" label="客户" style={{ marginBottom: 0 }}>
+                <Select placeholder="请选择客户" style={{ width: "100%" }} allowClear showSearch>
+                  {customerOptions.map((c) => (
+                    <Option key={c.id} value={c.id}>{c.customerName}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={5}>
+              <Form.Item name="dateRange" label="签订日期" style={{ marginBottom: 0 }}>
+                <RangePicker style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={4}>
+              <Form.Item style={{ marginBottom: 0 }}>
+                <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+                  搜索
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Card>
 
       {/* 表格 */}
       <Table

@@ -30,7 +30,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { approvalService, userService } from '../../services/api';
-import { Approval, ApprovalType, ApprovalStatus } from '../../types';
+import type { Approval, ApprovalType, ApprovalStatus } from '../../types';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -272,7 +272,7 @@ const ApprovalListPage: React.FC = () => {
   const rejectedCount = data.filter(d => d.status === 'REJECTED').length;
 
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       <Title level={4} style={{ marginBottom: 16 }}>
         审批中心
       </Title>

@@ -11,6 +11,8 @@ import { Opportunity } from '../entities/Opportunity';
 import { Contract, PaymentSchedule } from '../entities/Contract';
 import { Project, ProjectMilestone, ProjectMember } from '../entities/Project';
 import { Approval } from '../entities/Approval';
+import { ApprovalFlow } from '../entities/ApprovalFlow';
+import { ApprovalNode } from '../entities/ApprovalNode';
 
 export const AppDataSource = new DataSource({
   type: 'sqlite',
@@ -27,7 +29,9 @@ export const AppDataSource = new DataSource({
     ProjectMilestone,
     ProjectMember,
     PaymentSchedule,
-    Approval
+    Approval,
+    ApprovalFlow,
+    ApprovalNode
   ],
   migrations: ['src/migrations/*.ts'],
   subscribers: []

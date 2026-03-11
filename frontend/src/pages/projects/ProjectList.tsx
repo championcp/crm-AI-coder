@@ -18,7 +18,10 @@ import {
   Typography,
   DatePicker,
   InputNumber,
-  Progress
+  Progress,
+  Card,
+  Row,
+  Col
 } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -310,8 +313,8 @@ const ProjectListPage: React.FC = () => {
   ];
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+    <div style={{ width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
         <Title level={4} style={{ margin: 0 }}>
           项目管理
         </Title>
@@ -321,50 +324,68 @@ const ProjectListPage: React.FC = () => {
       </div>
 
       {/* 搜索表单 */}
-      <Form layout="inline" onFinish={handleSearch} style={{ marginBottom: 16 }}>
-        <Form.Item name="keyword" label="关键词">
-          <Input placeholder="项目编号/名称" style={{ width: 160 }} />
-        </Form.Item>
-        <Form.Item name="projectType" label="项目类型">
-          <Select placeholder="请选择" style={{ width: 120 }} allowClear>
-            <Option value="PRODUCT_DEVELOPMENT">产品开发</Option>
-            <Option value="SERVICE_DELIVERY">服务交付</Option>
-            <Option value="CONSULTING">咨询实施</Option>
-            <Option value="MIXED">混合类型</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item name="level" label="项目级别">
-          <Select placeholder="请选择" style={{ width: 120 }} allowClear>
-            <Option value="A">A级</Option>
-            <Option value="B">B级</Option>
-            <Option value="C">C级</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item name="status" label="状态">
-          <Select placeholder="请选择" style={{ width: 120 }} allowClear>
-            <Option value="PENDING_APPROVAL">立项审批中</Option>
-            <Option value="EXECUTING">执行中</Option>
-            <Option value="ACCEPTANCE">验收中</Option>
-            <Option value="COMPLETED">已验收</Option>
-            <Option value="TERMINATED">已终止</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item name="managerId" label="项目经理">
-          <Select placeholder="请选择" style={{ width: 120 }} allowClear showSearch>
-            {managerOptions.map((m) => (
-              <Option key={m.id} value={m.id}>{m.realName}</Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item name="dateRange" label="计划日期">
-          <RangePicker />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-            搜索
-          </Button>
-        </Form.Item>
-      </Form>
+      <Card style={{ marginBottom: 16 }}>
+        <Form layout="inline" onFinish={handleSearch}>
+          <Row gutter={[16, 16]} align="middle">
+            <Col xs={24} sm={12} md={6} lg={5}>
+              <Form.Item name="keyword" label="关键词" style={{ marginBottom: 0 }}>
+                <Input placeholder="项目编号/名称" style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={4}>
+              <Form.Item name="projectType" label="项目类型" style={{ marginBottom: 0 }}>
+                <Select placeholder="请选择" style={{ width: "100%" }} allowClear>
+                  <Option value="PRODUCT_DEVELOPMENT">产品开发</Option>
+                  <Option value="SERVICE_DELIVERY">服务交付</Option>
+                  <Option value="CONSULTING">咨询实施</Option>
+                  <Option value="MIXED">混合类型</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={4}>
+              <Form.Item name="level" label="项目级别" style={{ marginBottom: 0 }}>
+                <Select placeholder="请选择" style={{ width: "100%" }} allowClear>
+                  <Option value="A">A级</Option>
+                  <Option value="B">B级</Option>
+                  <Option value="C">C级</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={4}>
+              <Form.Item name="status" label="状态" style={{ marginBottom: 0 }}>
+                <Select placeholder="请选择" style={{ width: "100%" }} allowClear>
+                  <Option value="PENDING_APPROVAL">立项审批中</Option>
+                  <Option value="EXECUTING">执行中</Option>
+                  <Option value="ACCEPTANCE">验收中</Option>
+                  <Option value="COMPLETED">已验收</Option>
+                  <Option value="TERMINATED">已终止</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={5}>
+              <Form.Item name="managerId" label="项目经理" style={{ marginBottom: 0 }}>
+                <Select placeholder="请选择" style={{ width: "100%" }} allowClear showSearch>
+                  {managerOptions.map((m) => (
+                    <Option key={m.id} value={m.id}>{m.realName}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={5}>
+              <Form.Item name="dateRange" label="计划日期" style={{ marginBottom: 0 }}>
+                <RangePicker style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={4}>
+              <Form.Item style={{ marginBottom: 0 }}>
+                <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+                  搜索
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Card>
 
       {/* 表格 */}
       <Table

@@ -332,6 +332,42 @@ export interface ApprovalRecord {
   createdAt: string;
 }
 
+// ===== 审批流程类型 =====
+
+/**\n * 审批流程状态\n */
+export type ApprovalFlowStatus = 'draft' | 'active' | 'inactive';
+
+/**\n * 审批节点审批人类型\n */
+export type ApproverType = 'user' | 'role' | 'department';
+
+/**\n * 审批流程信息\n */
+export interface ApprovalFlow {
+  id: string;
+  flowCode: string;
+  flowName: string;
+  businessType: string;
+  description?: string;
+  status: ApprovalFlowStatus;
+  version: number;
+  nodes?: ApprovalNode[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**\n * 审批节点信息\n */
+export interface ApprovalNode {
+  id: string;
+  nodeName: string;
+  nodeOrder: number;
+  approverType: ApproverType;
+  approvers: string[];
+  conditions?: any;
+  status: string;
+  flowId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ===== 财务管理类型 =====
 
 /**
@@ -506,4 +542,16 @@ export enum UserRole {
   SALES_MANAGER = 'sales_manager',
   DEVELOPER = 'developer',
   FINANCE_ACCOUNTANT = 'finance_accountant'
+}
+
+// ===== 角色管理类型 =====
+export interface Role {
+  id: string;
+  roleCode: string;
+  roleName: string;
+  description?: string;
+  permissions?: string[];
+  status: 'active' | 'inactive';
+  createdAt: string;
+  updatedAt: string;
 }

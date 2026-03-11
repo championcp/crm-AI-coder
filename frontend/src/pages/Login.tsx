@@ -13,7 +13,7 @@ import { LoginParams, User } from '../types';
 const { Title } = Typography;
 
 interface LoginPageProps {
-  onLogin: (user: User, token: string) => void;
+  onLogin?: (user: User, token: string) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
@@ -30,7 +30,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         localStorage.setItem('user', JSON.stringify(user));
         message.success('登录成功');
         // 先更新状态，稍后跳转
-        onLogin(user, token);
+        if (onLogin) {
+          onLogin(user, token);
+        }
         // 使用 setTimeout 确保状态更新后再跳转
         setTimeout(() => {
           window.location.href = '/dashboard';

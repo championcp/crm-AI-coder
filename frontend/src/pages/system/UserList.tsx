@@ -19,9 +19,10 @@ import {
   Card,
   Row,
   Col,
-  Statistic
+  Statistic,
+  Switch
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { userService } from '../../services/api';
 import { User, UserRole } from '../../types';
@@ -36,7 +37,10 @@ const UserListPage: React.FC = () => {
   const [detailVisible, setDetailVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [viewingUser, setViewingUser] = useState<User | null>(null);
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [form] = Form.useForm();
+  const [passwordForm] = Form.useForm();
   const [departments, setDepartments] = useState<{ value: string; label: string }[]>([]);
   const [roles, setRoles] = useState<{ value: string; label: string }[]>([]);
 
@@ -121,6 +125,39 @@ const UserListPage: React.FC = () => {
     }
   };
 
+  const handlePasswordChange = (user: User) => {
+    setSelectedUser(user);
+    setPasswordModalVisible(true);
+  };
+
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
+    try {
+      await userService.toggleStatus(id);
+      message.success(`${currentStatus === 'active' ? '禁用' : '启用'}成功`);
+      fetchData();
+    } catch (error) {
+      message.error('操作失败');
+    }
+  };
+
+  const handlePasswordSubmit = async () => {
+    try {
+      const values = await passwordForm.validateFields();
+      if (selectedUser) {
+        await userService.changePassword(
+          selectedUser.id,
+          values.oldPassword,
+          values.newPassword
+        );
+        message.success('密码修改成功');
+        setPasswordModalVisible(false);
+        passwordForm.resetFields();
+      }
+    } catch (error) {
+      message.error('密码修改失败');
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
@@ -159,11 +196,33 @@ const UserListPage: React.FC = () => {
     { title: '状态', dataIndex: 'status', key: 'status',
       render: (s: string) => <Tag color={s === 'active' ? 'success' : 'default'}>{s === 'active' ? '启用' : '禁用'}</Tag>
     },
-    { title: '操作', key: 'action', width: 180,
+    { title: '操作', key: 'action', width: 220,
       render: (_: any, record: User) => (
         <Space>
           <Button type="link" size="small" onClick={() => handleView(record)}>查看</Button>
           <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>编辑</Button>
+          <Button
+            type="link"
+            size="small"
+            icon={<LockOutlined />}
+            onClick={() => handlePasswordChange(record)}
+          >
+            密码
+          </Button>
+          <Popconfirm
+            title={`确定${record.status === 'active' ? '禁用' : '启用'}该用户吗?`}
+            onConfirm={() => handleToggleStatus(record.id, record.status)}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button
+              type="link"
+              size="small"
+              danger={record.status === 'active'}
+            >
+              {record.status === 'active' ? '禁用' : '启用'}
+            </Button>
+          </Popconfirm>
           <Popconfirm title="确定删除该用户吗?" onConfirm={() => handleDelete(record.id)} okText="确定" cancelText="取消">
             <Button type="link" size="small" danger icon={<DeleteOutlined />}>删除</Button>
           </Popconfirm>
@@ -175,8 +234,8 @@ const UserListPage: React.FC = () => {
   const activeCount = data.filter(d => d.status === 'active').length;
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+    <div style={{ width: "100%" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
         <Title level={4} style={{ margin: 0 }}>用户管理</Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>新增用户</Button>
       </div>
@@ -229,6 +288,57 @@ const UserListPage: React.FC = () => {
               <Option value="active">启用</Option>
               <Option value="inactive">禁用</Option>
             </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="修改密码"
+        open={passwordModalVisible}
+        onOk={handlePasswordSubmit}
+        onCancel={() => {
+          setPasswordModalVisible(false);
+          passwordForm.resetFields();
+        }}
+        width={400}
+      >
+        <Form form={passwordForm} layout="vertical">
+          {selectedUser && (
+            <Form.Item label="用户名">
+              <Input value={selectedUser.username} disabled />
+            </Form.Item>
+          )}
+          <Form.Item
+            name="oldPassword"
+            label="旧密码"
+            rules={[{ required: true, message: '请输入旧密码' }]}
+          >
+            <Input.Password placeholder="请输入旧密码" />
+          </Form.Item>
+          <Form.Item
+            name="newPassword"
+            label="新密码"
+            rules={[{ required: true, message: '请输入新密码' }]}
+          >
+            <Input.Password placeholder="请输入新密码" />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            label="确认新密码"
+            dependencies={['newPassword']}
+            rules={[
+              { required: true, message: '请确认新密码' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('newPassword') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('两次输入的密码不一致'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="请再次输入新密码" />
           </Form.Item>
         </Form>
       </Modal>

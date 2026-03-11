@@ -29,6 +29,7 @@ import ProjectList from './pages/projects/ProjectList';
 
 // 审批管理
 import ApprovalList from './pages/approvals/ApprovalList';
+import ApprovalFlowList from './pages/approvals/ApprovalFlowList';
 
 // 财务管理
 import FinanceDashboard from './pages/finance/FinanceDashboard';
@@ -100,6 +101,7 @@ const App: React.FC = () => {
 
             {/* 审批流程 */}
             <Route path="approvals" element={<ApprovalList />} />
+            <Route path="approval-flows" element={<ApprovalFlowList />} />
 
             {/* 财务管理 */}
             <Route path="finance" element={<FinanceDashboard />} />

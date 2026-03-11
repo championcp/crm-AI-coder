@@ -265,8 +265,8 @@ const OpportunityListPage: React.FC = () => {
   ];
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+    <div style={{ width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
         <Title level={4} style={{ margin: 0 }}>
           商机管理
         </Title>
@@ -294,44 +294,58 @@ const OpportunityListPage: React.FC = () => {
       </Card>
 
       {/* 搜索表单 */}
-      <Form layout="inline" onFinish={handleSearch} style={{ marginBottom: 16 }}>
-        <Form.Item name="keyword" label="关键词">
-          <Input placeholder="商机名称" style={{ width: 200 }} />
-        </Form.Item>
-        <Form.Item name="level" label="商机级别">
-          <Select placeholder="请选择" style={{ width: 100 }} allowClear>
-            <Option value="一级">一级</Option>
-            <Option value="准一级">准一级</Option>
-            <Option value="二级">二级</Option>
-            <Option value="准二级">准二级</Option>
-            <Option value="三级">三级</Option>
-            <Option value="准三级">准三级</Option>
-            <Option value="四级">四级</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item name="stage" label="销售阶段">
-          <Select placeholder="请选择" style={{ width: 120 }} allowClear>
-            <Option value="requirement">需求了解</Option>
-            <Option value="proposal">方案制定</Option>
-            <Option value="negotiation">商务洽谈</Option>
-            <Option value="contract_review">合同评审</Option>
-            <Option value="contract_approval">合同审批</Option>
-            <Option value="signed">签约完成</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item name="status" label="状态">
-          <Select placeholder="请选择" style={{ width: 100 }} allowClear>
-            <Option value="active">进行中</Option>
-            <Option value="won">已成交</Option>
-            <Option value="lost">已失败</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-            搜索
-          </Button>
-        </Form.Item>
-      </Form>
+      <Card style={{ marginBottom: 16 }}>
+        <Form layout="inline" onFinish={handleSearch}>
+          <Row gutter={[16, 16]} align="middle">
+            <Col xs={24} sm={12} md={6} lg={5}>
+              <Form.Item name="keyword" label="关键词" style={{ marginBottom: 0 }}>
+                <Input placeholder="商机名称" style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={4}>
+              <Form.Item name="level" label="商机级别" style={{ marginBottom: 0 }}>
+                <Select placeholder="请选择" style={{ width: '100%' }} allowClear>
+                  <Option value="一级">一级</Option>
+                  <Option value="准一级">准一级</Option>
+                  <Option value="二级">二级</Option>
+                  <Option value="准二级">准二级</Option>
+                  <Option value="三级">三级</Option>
+                  <Option value="准三级">准三级</Option>
+                  <Option value="四级">四级</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={5}>
+              <Form.Item name="stage" label="销售阶段" style={{ marginBottom: 0 }}>
+                <Select placeholder="请选择" style={{ width: '100%' }} allowClear>
+                  <Option value="requirement">需求了解</Option>
+                  <Option value="proposal">方案制定</Option>
+                  <Option value="negotiation">商务洽谈</Option>
+                  <Option value="contract_review">合同评审</Option>
+                  <Option value="contract_approval">合同审批</Option>
+                  <Option value="signed">签约完成</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={4}>
+              <Form.Item name="status" label="状态" style={{ marginBottom: 0 }}>
+                <Select placeholder="请选择" style={{ width: '100%' }} allowClear>
+                  <Option value="active">进行中</Option>
+                  <Option value="won">已成交</Option>
+                  <Option value="lost">已失败</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6} lg={4}>
+              <Form.Item style={{ marginBottom: 0 }}>
+                <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+                  搜索
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Card>
 
       {/* 表格 */}
       <Table

@@ -75,9 +75,13 @@ const MainLayout: React.FC = () => {
       ]
     },
     {
-      key: '/approvals',
+      key: 'approvals',
       icon: <AuditOutlined />,
-      label: '审批流程'
+      label: '审批流程',
+      children: [
+        { key: '/approvals', icon: <CheckCircleOutlined />, label: '我的审批' },
+        { key: '/approval-flows', icon: <FileTextOutlined />, label: '流程配置' }
+      ]
     },
     {
       key: '/finance',
@@ -159,6 +163,9 @@ const MainLayout: React.FC = () => {
     const pathname = location.pathname;
     if (['/customers', '/opportunities', '/contracts', '/projects'].includes(pathname)) {
       return ['business'];
+    }
+    if (['/approvals', '/approval-flows'].includes(pathname)) {
+      return ['approvals'];
     }
     return [];
   };

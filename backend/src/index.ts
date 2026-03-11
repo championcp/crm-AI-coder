@@ -12,11 +12,13 @@ import { AppDataSource } from './config/database';
 import { User, UserRole, UserStatus } from './entities/User';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
+import roleRoutes from './routes/roles';
 import customerRoutes from './routes/customers';
 import opportunityRoutes from './routes/opportunities';
 import contractRoutes from './routes/contracts';
 import projectRoutes from './routes/projects';
 import approvalRoutes from './routes/approvals';
+import approvalFlowRoutes from './routes/approval-flows';
 import dashboardRoutes from './routes/dashboard';
 import { authenticate } from './middlewares/auth';
 
@@ -37,11 +39,13 @@ app.use('/uploads', express.static('uploads'));
 // API路由
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/roles', roleRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/contracts', contractRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/approvals', approvalRoutes);
+app.use('/api/approval-flows', approvalFlowRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 // 健康检查接口
