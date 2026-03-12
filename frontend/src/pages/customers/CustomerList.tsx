@@ -17,7 +17,10 @@ import {
   Row,
   Col,
   Tooltip,
-  message
+  message,
+  Form,
+  Drawer,
+  InputNumber
 } from 'antd';
 import {
   PlusOutlined,
@@ -27,11 +30,34 @@ import {
   EditOutlined,
   DeleteOutlined
 } from '@ant-design/icons';
-import { customerService } from '../../services/api';
+import { customerService, userService } from '../../services/api';
 import type { Customer, CustomerQueryParams } from '../../types';
 
-const { Title } = Typography;
 const { Option } = Select;
+const { TextArea } = Input;
+
+/**
+ * 客户选项数据类型
+ */
+interface CustomerOptions {
+  levels: { value: string; label: string }[];
+  statuses: { value: string; label: string }[];
+  industries: { value: string; label: string }[];
+  types: { value: string; label: string }[];
+  scales: { value: string; label: string }[];
+  sources: { value: string; label: string }[];
+}
+
+/**
+ * 用户选项数据类型
+ */
+interface UserOption {
+  id: string;
+  username: string;
+  realName: string;
+}
+
+const { Title } = Typography;
 
 /**
  * 客户列表页面组件
@@ -47,7 +73,7 @@ const CustomerList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   // 每页条数
   const [pageSize, setPageSize] = useState(10);
-  
+
   // 搜索关键词
   const [keyword, setKeyword] = useState('');
   // 客户等级筛选
@@ -57,12 +83,50 @@ const CustomerList: React.FC = () => {
   // 行业筛选
   const [industry, setIndustry] = useState<string>('');
 
+  // 新建客户Drawer状态
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [drawerTitle, setDrawerTitle] = useState('新建客户');
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [form] = Form.useForm();
+
+  // 选项数据
+  const [customerOptions, setCustomerOptions] = useState<CustomerOptions>({
+    levels: [],
+    statuses: [],
+    industries: [],
+    types: [],
+    scales: [],
+    sources: []
+  });
+  const [userOptions, setUserOptions] = useState<UserOption[]>([]);
+
   /**
    * 页面加载时获取客户数据
    */
   useEffect(() => {
     fetchCustomerList();
   }, [currentPage, pageSize]);
+
+  /**
+   * 加载选项数据
+   */
+  const loadOptions = async () => {
+    try {
+      // 获取客户选项
+      const customerRes = await customerService.getOptions();
+      if (customerRes.code === 200 && customerRes.data) {
+        setCustomerOptions(customerRes.data);
+      }
+
+      // 获取用户选项（负责人列表）
+      const userRes = await userService.getOptions();
+      if (userRes.code === 200 && userRes.data) {
+        setUserOptions(userRes.data);
+      }
+    } catch (error) {
+      console.error('加载选项数据失败:', error);
+    }
+  };
 
   /**
    * 获取客户列表数据
@@ -78,7 +142,7 @@ const CustomerList: React.FC = () => {
         status: status as any || undefined,
         industry: industry || undefined
       };
-      
+
       const response = await customerService.getList(params);
       if (response.code === 200 && response.data) {
         setDataSource(response.data.list || []);
@@ -152,11 +216,66 @@ const CustomerList: React.FC = () => {
   };
 
   /**
-   * 新建客户
+   * 新建客户 - 打开Drawer
    */
-  const handleCreate = () => {
-    message.info('新建客户');
-    // TODO: 打开新建弹窗或跳转新建页
+  const handleCreate = async () => {
+    setDrawerTitle('新建客户');
+    form.resetFields();
+    await loadOptions();
+    setDrawerVisible(true);
+  };
+
+  /**
+   * 关闭Drawer
+   */
+  const handleDrawerClose = () => {
+    setDrawerVisible(false);
+    form.resetFields();
+  };
+
+  /**
+   * 提交客户表单
+   */
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      setSubmitLoading(true);
+
+      const submitData = {
+        name: values.name,
+        type: values.type || 'enterprise',
+        level: values.level,
+        status: values.status || 'potential',
+        industry: values.industry,
+        scale: values.scale,
+        contactName: values.contactName || undefined,
+        contactPhone: values.contactPhone || undefined,
+        contactEmail: values.contactEmail || undefined,
+        address: values.address || undefined,
+        source: values.source || 'other',
+        remark: values.remark || undefined,
+        ownerId: values.ownerId
+      };
+
+      const response = await customerService.create(submitData);
+
+      if (response.code === 201 || response.code === 200) {
+        message.success('客户创建成功');
+        handleDrawerClose();
+        fetchCustomerList();
+      } else {
+        message.error(response.message || '创建失败');
+      }
+    } catch (error: any) {
+      console.error('创建客户失败:', error);
+      if (error.errorFields) {
+        // 表单验证失败
+        return;
+      }
+      message.error(error.message || '创建客户失败');
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   /**
@@ -177,12 +296,25 @@ const CustomerList: React.FC = () => {
    */
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      '潜在客户': 'blue',
-      '正式客户': 'green',
-      '重点客户': 'red',
-      '流失客户': 'default'
+      'potential': 'blue',
+      'formal': 'green',
+      'key': 'red',
+      'lost': 'default'
     };
     return colors[status] || 'default';
+  };
+
+  /**
+   * 获取客户状态标签
+   */
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      'potential': '潜在客户',
+      'formal': '正式客户',
+      'key': '重点客户',
+      'lost': '流失客户'
+    };
+    return labels[status] || status;
   };
 
   /**
@@ -201,7 +333,7 @@ const CustomerList: React.FC = () => {
       title: '客户编码',
       dataIndex: 'code',
       key: 'code',
-      width: 120
+      width: 150
     },
     {
       title: '客户等级',
@@ -218,14 +350,14 @@ const CustomerList: React.FC = () => {
       key: 'status',
       width: 100,
       render: (status: string) => (
-        <Tag color={getStatusColor(status)}>{status}</Tag>
+        <Tag color={getStatusColor(status)}>{getStatusLabel(status)}</Tag>
       )
     },
     {
       title: '所属行业',
       dataIndex: 'industry',
       key: 'industry',
-      width: 120,
+      width: 100,
       ellipsis: true
     },
     {
@@ -238,7 +370,7 @@ const CustomerList: React.FC = () => {
       title: '联系电话',
       dataIndex: 'contactPhone',
       key: 'contactPhone',
-      width: 140
+      width: 130
     },
     {
       title: '负责人',
@@ -261,24 +393,24 @@ const CustomerList: React.FC = () => {
       render: (_: any, record: Customer) => (
         <Space size="small">
           <Tooltip title="查看">
-            <Button 
-              type="text" 
-              icon={<EyeOutlined />} 
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
               onClick={() => handleView(record)}
             />
           </Tooltip>
           <Tooltip title="编辑">
-            <Button 
-              type="text" 
-              icon={<EditOutlined />} 
+            <Button
+              type="text"
+              icon={<EditOutlined />}
               onClick={() => handleEdit(record)}
             />
           </Tooltip>
           <Tooltip title="删除">
-            <Button 
-              type="text" 
+            <Button
+              type="text"
               danger
-              icon={<DeleteOutlined />} 
+              icon={<DeleteOutlined />}
               onClick={() => handleDelete(record)}
             />
           </Tooltip>
@@ -327,10 +459,10 @@ const CustomerList: React.FC = () => {
               style={{ width: '100%' }}
               allowClear
             >
-              <Option value="潜在客户">潜在客户</Option>
-              <Option value="正式客户">正式客户</Option>
-              <Option value="重点客户">重点客户</Option>
-              <Option value="流失客户">流失客户</Option>
+              <Option value="potential">潜在客户</Option>
+              <Option value="formal">正式客户</Option>
+              <Option value="key">重点客户</Option>
+              <Option value="lost">流失客户</Option>
             </Select>
           </Col>
           <Col xs={24} sm={12} md={4} lg={4}>
@@ -341,12 +473,12 @@ const CustomerList: React.FC = () => {
               style={{ width: '100%' }}
               allowClear
             >
-              <Option value="互联网">互联网</Option>
-              <Option value="金融">金融</Option>
-              <Option value="制造">制造</Option>
-              <Option value="教育">教育</Option>
-              <Option value="医疗">医疗</Option>
-              <Option value="其他">其他</Option>
+              <Option value="it">互联网</Option>
+              <Option value="finance">金融</Option>
+              <Option value="manufacturing">制造</Option>
+              <Option value="education">教育</Option>
+              <Option value="healthcare">医疗</Option>
+              <Option value="other">其他</Option>
             </Select>
           </Col>
           <Col xs={24} sm={12} md={6} lg={7}>
@@ -397,6 +529,174 @@ const CustomerList: React.FC = () => {
           />
         </div>
       </Card>
+
+      {/* 新建客户Drawer */}
+      <Drawer
+        title={drawerTitle}
+        width={600}
+        open={drawerVisible}
+        onClose={handleDrawerClose}
+        extra={
+          <Space>
+            <Button onClick={handleDrawerClose}>取消</Button>
+            <Button type="primary" loading={submitLoading} onClick={handleSubmit}>
+              提交
+            </Button>
+          </Space>
+        }
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          requiredMark="optional"
+        >
+          <Form.Item
+            name="name"
+            label="客户名称"
+            rules={[{ required: true, message: '请输入客户名称' }]}
+          >
+            <Input placeholder="请输入客户名称" />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="type"
+                label="客户类型"
+              >
+                <Select placeholder="请选择客户类型" allowClear>
+                  {customerOptions.types.map(opt => (
+                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="level"
+                label="客户等级"
+              >
+                <Select placeholder="请选择客户等级" allowClear>
+                  {customerOptions.levels.map(opt => (
+                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="status"
+                label="客户状态"
+              >
+                <Select placeholder="请选择客户状态" allowClear>
+                  {customerOptions.statuses.map(opt => (
+                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="industry"
+                label="所属行业"
+                rules={[{ required: true, message: '请选择所属行业' }]}
+              >
+                <Select placeholder="请选择所属行业" allowClear>
+                  {customerOptions.industries.map(opt => (
+                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="scale"
+                label="客户规模"
+              >
+                <Select placeholder="请选择客户规模" allowClear>
+                  {customerOptions.scales.map(opt => (
+                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="source"
+                label="客户来源"
+              >
+                <Select placeholder="请选择客户来源" allowClear>
+                  {customerOptions.sources.map(opt => (
+                    <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="contactName"
+                label="联系人姓名"
+              >
+                <Input placeholder="请输入联系人姓名" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="contactPhone"
+                label="联系电话"
+              >
+                <Input placeholder="请输入联系电话" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="contactEmail"
+                label="联系人邮箱"
+              >
+                <Input placeholder="请输入联系人邮箱" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="ownerId"
+                label="负责人"
+              >
+                <Select placeholder="请选择负责人" allowClear>
+                  {userOptions.map(user => (
+                    <Option key={user.id} value={user.id}>{user.realName}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="address"
+            label="地址"
+          >
+            <Input placeholder="请输入地址" />
+          </Form.Item>
+
+          <Form.Item
+            name="remark"
+            label="备注"
+          >
+            <TextArea rows={3} placeholder="请输入备注" />
+          </Form.Item>
+        </Form>
+      </Drawer>
     </div>
   );
 };

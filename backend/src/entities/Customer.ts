@@ -78,6 +78,10 @@ export class Customer {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  // 客户编码
+  @Column({ length: 50, unique: true })
+  code!: string;
+
   // 客户名称
   @Column({ length: 200 })
   name!: string;
