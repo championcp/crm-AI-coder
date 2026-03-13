@@ -194,7 +194,7 @@ const OpportunityListPage: React.FC = () => {
       title: '客户',
       dataIndex: 'customer',
       key: 'customer',
-      render: (customer: Customer) => customer?.customerName || '-'
+      render: (customer: Customer) => customer?.name || '-'
     },
     {
       title: '商机金额',
