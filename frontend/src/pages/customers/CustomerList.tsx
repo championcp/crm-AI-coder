@@ -147,7 +147,7 @@ const CustomerList: React.FC = () => {
       };
 
       const response = await customerService.getList(params);
-      if (response.code === 200 && response.data) {
+      if (response.success && response.data) {
         setDataSource(response.data.list || []);
         setTotal(response.data.total || 0);
       } else {
