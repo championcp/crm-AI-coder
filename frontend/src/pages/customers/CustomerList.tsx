@@ -17,7 +17,7 @@ import {
   Row,
   Col,
   Tooltip,
-  message,
+  App,
   Form,
   Drawer,
   InputNumber
@@ -63,6 +63,9 @@ const { Title } = Typography;
  * 客户列表页面组件
  */
 const CustomerList: React.FC = () => {
+  // 使用App组件的message context
+  const { message } = App.useApp();
+
   // 加载状态
   const [loading, setLoading] = useState(false);
   // 客户数据列表
@@ -533,7 +536,7 @@ const CustomerList: React.FC = () => {
       {/* 新建客户Drawer */}
       <Drawer
         title={drawerTitle}
-        width={600}
+        styles={{ wrapper: { width: 600 } }}
         open={drawerVisible}
         onClose={handleDrawerClose}
         extra={

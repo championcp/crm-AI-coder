@@ -13,7 +13,7 @@ import {
   Input,
   Select,
   Modal,
-  message,
+  App,
   Typography,
   Card,
   Row,
@@ -43,6 +43,9 @@ interface CostRecord {
 }
 
 const CostListPage: React.FC = () => {
+  // 使用App组件的message context
+  const { message } = App.useApp();
+
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<CostRecord[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -176,10 +179,10 @@ const CostListPage: React.FC = () => {
           <Card><Statistic title="总成本" value={totalCost} prefix="¥" /></Card>
         </Col>
         <Col span={8}>
-          <Card><Statistic title="已批准" value={approvedCost} valueStyle={{ color: '#52c41a' }} prefix="¥" /></Card>
+          <Card><Statistic title="已批准" value={approvedCost} style={{ color: '#52c41a' }} prefix="¥" /></Card>
         </Col>
         <Col span={8}>
-          <Card><Statistic title="待审批" value={totalCost - approvedCost} valueStyle={{ color: '#1890ff' }} prefix="¥" /></Card>
+          <Card><Statistic title="待审批" value={totalCost - approvedCost} style={{ color: '#1890ff' }} prefix="¥" /></Card>
         </Col>
       </Row>
 

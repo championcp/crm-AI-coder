@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, message, Typography } from 'antd';
+import { Form, Input, Button, Card, App, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/api';
@@ -19,6 +19,7 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { message } = App.useApp();
 
   const onFinish = async (values: LoginParams) => {
     setLoading(true);

@@ -173,7 +173,7 @@ const Dashboard: React.FC = () => {
               title="客户总数"
               value={stats?.customers?.total || 0}
               prefix={<UserOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              style={{ color: '#1890ff' }}
             />
             <Text type="secondary">正式客户: {stats?.customers?.formal || 0}</Text>
           </Card>
@@ -184,7 +184,7 @@ const Dashboard: React.FC = () => {
               title="商机总数"
               value={stats?.opportunities?.total || 0}
               prefix={<FileTextOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              style={{ color: '#52c41a' }}
             />
             <Text type="secondary">进行中: {stats?.opportunities?.active || 0}</Text>
           </Card>
@@ -195,7 +195,7 @@ const Dashboard: React.FC = () => {
               title="商机金额"
               value={stats?.opportunities?.amount || 0}
               prefix={<DollarOutlined />}
-              valueStyle={{ color: '#faad14' }}
+              style={{ color: '#faad14' }}
               formatter={(value) => formatCurrency(Number(value))}
             />
             <Text type="secondary">已成交: {stats?.opportunities?.won || 0}</Text>
@@ -207,7 +207,7 @@ const Dashboard: React.FC = () => {
               title="项目总数"
               value={stats?.projects?.total || 0}
               prefix={<ProjectOutlined />}
-              valueStyle={{ color: '#722ed1' }}
+              style={{ color: '#722ed1' }}
             />
             <Text type="secondary">执行中: {stats?.projects?.executing || 0}</Text>
           </Card>
@@ -222,7 +222,7 @@ const Dashboard: React.FC = () => {
               title="执行中项目"
               value={stats?.projects?.executing || 0}
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#13c2c2' }}
+              style={{ color: '#13c2c2' }}
             />
           </Card>
         </Col>
@@ -232,7 +232,7 @@ const Dashboard: React.FC = () => {
               title="已完成项目"
               value={stats?.projects?.completed || 0}
               prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              style={{ color: '#52c41a' }}
             />
           </Card>
         </Col>
@@ -242,7 +242,7 @@ const Dashboard: React.FC = () => {
               title="合同总数"
               value={stats?.contracts?.total || 0}
               prefix={<FileTextOutlined />}
-              valueStyle={{ color: '#fa8c16' }}
+              style={{ color: '#fa8c16' }}
             />
           </Card>
         </Col>
@@ -252,7 +252,7 @@ const Dashboard: React.FC = () => {
               title="待审批"
               value={stats?.approvals?.pending || 0}
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#f5222d' }}
+              style={{ color: '#f5222d' }}
             />
           </Card>
         </Col>
@@ -277,8 +277,8 @@ const Dashboard: React.FC = () => {
                   <Progress
                     percent={item.count}
                     strokeColor={item.color}
-                    trailColor="#f0f0f0"
-                    strokeWidth={12}
+                    railColor="#f0f0f0"
+                    size={12}
                     showInfo={false}
                   />
                 </div>
@@ -300,8 +300,8 @@ const Dashboard: React.FC = () => {
                     type="circle"
                     percent={item.value}
                     strokeColor={item.color}
-                    trailColor="#f0f0f0"
-                    strokeWidth={10}
+                    railColor="#f0f0f0"
+                    size={80}
                     format={() => <Text strong style={{ fontSize: 20, color: item.color }}>{item.value}%</Text>}
                   />
                   <div style={{ marginTop: 8 }}>

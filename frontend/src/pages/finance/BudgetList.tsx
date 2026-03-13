@@ -13,7 +13,7 @@ import {
   Input,
   Select,
   Modal,
-  message,
+  App,
   Popconfirm,
   Typography,
   Card,
@@ -45,6 +45,9 @@ interface BudgetRecord {
 }
 
 const BudgetListPage: React.FC = () => {
+  // 使用App组件的message context
+  const { message } = App.useApp();
+
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<BudgetRecord[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -275,12 +278,12 @@ const BudgetListPage: React.FC = () => {
         </Col>
         <Col span={8}>
           <Card>
-            <Statistic title="已使用" value={totalUsed} valueStyle={{ color: '#1890ff' }} prefix="¥" />
+            <Statistic title="已使用" value={totalUsed} style={{ color: '#1890ff' }} prefix="¥" />
           </Card>
         </Col>
         <Col span={8}>
           <Card>
-            <Statistic title="剩余预算" value={totalRemaining} valueStyle={{ color: totalRemaining < 100000 ? '#f5222d' : '#52c41a' }} prefix="¥" />
+            <Statistic title="剩余预算" value={totalRemaining} style={{ color: totalRemaining < 100000 ? '#f5222d' : '#52c41a' }} prefix="¥" />
           </Card>
         </Col>
       </Row>

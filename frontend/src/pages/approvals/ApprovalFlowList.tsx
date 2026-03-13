@@ -13,7 +13,7 @@ import {
   Input,
   Select,
   Modal,
-  message,
+  App,
   Popconfirm,
   Typography,
   Card,
@@ -45,6 +45,9 @@ const { TextArea } = Input;
 const { Step } = Steps;
 
 const ApprovalFlowListPage: React.FC = () => {
+  // 使用App组件的message context
+  const { message } = App.useApp();
+
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<ApprovalFlow[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -272,12 +275,12 @@ const ApprovalFlowListPage: React.FC = () => {
         </Col>
         <Col span={8}>
           <Card>
-            <Statistic title="启用流程" value={activeCount} valueStyle={{ color: '#52c41a' }} />
+            <Statistic title="启用流程" value={activeCount} style={{ color: '#52c41a' }} />
           </Card>
         </Col>
         <Col span={8}>
           <Card>
-            <Statistic title="草稿流程" value={draftCount} valueStyle={{ color: '#faad14' }} />
+            <Statistic title="草稿流程" value={draftCount} style={{ color: '#faad14' }} />
           </Card>
         </Col>
       </Row>
@@ -338,7 +341,7 @@ const ApprovalFlowListPage: React.FC = () => {
 
       <Drawer
         title="审批流程详情"
-        width={600}
+        styles={{ wrapper: { width: 600 } }}
         open={detailVisible}
         onClose={() => setDetailVisible(false)}
       >

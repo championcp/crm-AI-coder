@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, App as AntApp } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 
 // 布局
@@ -58,64 +58,66 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
  */
 const App: React.FC = () => {
   return (
-    <ConfigProvider
-      locale={zhCN}
-      theme={{
-        token: {
-          colorPrimary: '#1890ff',
-          borderRadius: 4,
-        },
-      }}
-    >
-      <HashRouter>
-        <Routes>
-          {/* 登录页面 */}
-          <Route path="/login" element={<Login />} />
+    <AntApp>
+      <ConfigProvider
+        locale={zhCN}
+        theme={{
+          token: {
+            colorPrimary: '#1890ff',
+            borderRadius: 4,
+          },
+        }}
+      >
+        <HashRouter>
+          <Routes>
+            {/* 登录页面 */}
+            <Route path="/login" element={<Login />} />
 
-          {/* 主布局路由 */}
-          <Route
-            path="/"
-            element={
-              <PrivateRoute>
-                <MainLayout />
-              </PrivateRoute>
-            }
-          >
-            {/* 默认重定向到仪表盘 */}
-            <Route index element={<Navigate to="/dashboard" replace />} />
+            {/* 主布局路由 */}
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <MainLayout />
+                </PrivateRoute>
+              }
+            >
+              {/* 默认重定向到仪表盘 */}
+              <Route index element={<Navigate to="/dashboard" replace />} />
 
-            {/* 仪表盘 */}
-            <Route path="dashboard" element={<Dashboard />} />
+              {/* 仪表盘 */}
+              <Route path="dashboard" element={<Dashboard />} />
 
-            {/* 客户管理 */}
-            <Route path="customers" element={<CustomerList />} />
+              {/* 客户管理 */}
+              <Route path="customers" element={<CustomerList />} />
 
-            {/* 商机管理 */}
-            <Route path="opportunities" element={<OpportunityList />} />
+              {/* 商机管理 */}
+              <Route path="opportunities" element={<OpportunityList />} />
 
-            {/* 合同管理 */}
-            <Route path="contracts" element={<ContractList />} />
+              {/* 合同管理 */}
+              <Route path="contracts" element={<ContractList />} />
 
-            {/* 项目管理 */}
-            <Route path="projects" element={<ProjectList />} />
+              {/* 项目管理 */}
+              <Route path="projects" element={<ProjectList />} />
 
-            {/* 审批流程 */}
-            <Route path="approvals" element={<ApprovalList />} />
-            <Route path="approval-flows" element={<ApprovalFlowList />} />
+              {/* 审批流程 */}
+              <Route path="approvals" element={<ApprovalList />} />
+              <Route path="approval-flows" element={<ApprovalFlowList />} />
 
-            {/* 财务管理 */}
-            <Route path="finance" element={<FinanceDashboard />} />
+              {/* 财务管理 */}
+              <Route path="finance" element={<FinanceDashboard />} />
 
-            {/* 系统管理 */}
-            <Route path="system/users" element={<UserManagement />} />
-            <Route path="system/roles" element={<RoleManagement />} />
+              {/* 系统管理 */}
+              <Route path="system/users" element={<UserManagement />} />
+              <Route path="system/roles" element={<RoleManagement />} />
 
-            {/* 404 页面 */}
-            <Route path="*" element={<div>页面未找到</div>} />
-          </Route>
-        </Routes>
-      </HashRouter>
-    </ConfigProvider>
+              {/* 404 页面 */}
+              <Route path="*" element={<div>页面未找到</div>} />
+            </Route>
+          </Routes>
+        </HashRouter>
+      </ConfigProvider>
+    </AntApp>
   );
 };
 
