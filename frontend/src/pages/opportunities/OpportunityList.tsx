@@ -390,8 +390,8 @@ const OpportunityListPage: React.FC = () => {
           >
             <Select placeholder="请选择客户" showSearch optionFilterProp="label">
               {customerOptions.map((c) => (
-                <Option key={c.id} value={c.id} label={c.customerName}>
-                  {c.customerName}
+                <Option key={c.id} value={c.id} label={c.name}>
+                  {c.name}
                 </Option>
               ))}
             </Select>
