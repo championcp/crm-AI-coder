@@ -530,59 +530,18 @@ router.post('/:id/followups', authenticate, async (req: AuthRequest, res: Respon
 /**
  * 获取客户选项列表（用于下拉选择）
  * GET /api/customers/options/list
+ * 返回客户id和name列表
  */
 router.get('/options/list', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    // 返回客户等级、状态、行业等选项
-    const options = {
-      // 客户等级
-      levels: [
-        { value: 'A', label: 'A级' },
-        { value: 'B', label: 'B级' },
-        { value: 'C', label: 'C级' },
-        { value: 'D', label: 'D级' }
-      ],
-      // 客户状态
-      statuses: [
-        { value: 'potential', label: '潜在客户' },
-        { value: 'formal', label: '正式客户' },
-        { value: 'key', label: '重点客户' },
-        { value: 'lost', label: '流失客户' }
-      ],
-      // 所属行业
-      industries: [
-        { value: 'it', label: '互联网' },
-        { value: 'finance', label: '金融' },
-        { value: 'manufacturing', label: '制造' },
-        { value: 'education', label: '教育' },
-        { value: 'healthcare', label: '医疗' },
-        { value: 'other', label: '其他' }
-      ],
-      // 客户类型
-      types: [
-        { value: 'enterprise', label: '企业客户' },
-        { value: 'individual', label: '个人客户' }
-      ],
-      // 客户规模
-      scales: [
-        { value: 'large', label: '大型企业' },
-        { value: 'medium', label: '中型企业' },
-        { value: 'small', label: '小型企业' },
-        { value: 'micro', label: '微型企业' }
-      ],
-      // 客户来源
-      sources: [
-        { value: 'cold_call', label: '电话营销' },
-        { value: 'visit', label: '主动拜访' },
-        { value: 'referral', label: '客户推荐' },
-        { value: 'bidding', label: '招投标' },
-        { value: 'website', label: '官网' },
-        { value: 'social_media', label: '社交媒体' },
-        { value: 'other', label: '其他' }
-      ]
-    };
+    // 返回客户列表（仅id和name），用于下拉选择
+    const customers = await customerRepository()
+      .createQueryBuilder('customer')
+      .select(['customer.id', 'customer.name'])
+      .orderBy('customer.name', 'ASC')
+      .getMany();
 
-    res.json({ success: true, data: options });
+    res.json({ success: true, data: customers });
   } catch (error) {
     console.error('获取客户选项列表错误:', error);
     res.status(500).json({ success: false, message: '服务器错误' });
